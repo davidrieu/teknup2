@@ -332,9 +332,9 @@ class REST {
 			)
 		);
 
-		// Submit to Dolby
-		$dolby = new Dolby();
-		$result = $dolby->submit_job( $job_id );
+		// Submit to Replicate
+		$replicate = new Replicate();
+		$result = $replicate->submit_job( $job_id );
 
 		if ( is_wp_error( $result ) ) {
 			return new \WP_REST_Response(

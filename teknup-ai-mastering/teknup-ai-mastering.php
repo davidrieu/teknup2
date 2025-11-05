@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Teknup AI Mastering
  * Plugin URI: https://teknup.com
- * Description: Plugin WordPress complet pour un service SaaS de mastering audio professionnel utilisant l'API Dolby.io
- * Version: 1.0.1
+ * Description: Plugin WordPress complet pour un service SaaS de mastering audio professionnel et séparation des stems utilisant l'API Replicate.com
+ * Version: 1.0.2
  * Author: Teknup
  * Author URI: https://teknup.com
  * Text Domain: teknup-ai-mastering

@@ -154,13 +154,13 @@ class Admin {
 			delete_transient( 'teknup_activated' );
 			?>
 			<div class="notice notice-success is-dismissible">
-				<p><?php esc_html_e( 'Teknup AI Mastering has been activated! Please configure your Dolby API key in the settings.', 'teknup-ai-mastering' ); ?></p>
+				<p><?php esc_html_e( 'Teknup AI Mastering has been activated! Please configure your Replicate API token in the settings.', 'teknup-ai-mastering' ); ?></p>
 			</div>
 			<?php
 		}
 
 		// Check if API key is configured
-		$api_key = teknup_ai_mastering()->get_setting( 'dolby_api_key' );
+		$api_key = teknup_ai_mastering()->get_setting( 'replicate_api_token' );
 		if ( empty( $api_key ) && isset( $_GET['page'] ) && strpos( $_GET['page'], 'teknup' ) !== false ) {
 			?>
 			<div class="notice notice-warning">
@@ -168,7 +168,7 @@ class Admin {
 					<?php
 					printf(
 						/* translators: %s: settings page URL */
-						__( 'Teknup AI Mastering: Please <a href="%s">configure your Dolby API key</a> to start mastering audio files.', 'teknup-ai-mastering' ),
+						__( 'Teknup AI Mastering: Please <a href="%s">configure your Replicate API token</a> to start mastering audio files.', 'teknup-ai-mastering' ),
 						admin_url( 'admin.php?page=teknup-settings' )
 					);
 					?>
