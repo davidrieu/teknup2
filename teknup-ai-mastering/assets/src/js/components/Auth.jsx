@@ -31,7 +31,6 @@ const Auth = ({ onAuthSuccess }) => {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
-					'X-WP-Nonce': teknupData.nonce,
 				},
 				body: JSON.stringify(loginData),
 			});
@@ -75,7 +74,6 @@ const Auth = ({ onAuthSuccess }) => {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
-					'X-WP-Nonce': teknupData.nonce,
 				},
 				body: JSON.stringify({
 					username: registerData.username,
@@ -105,7 +103,7 @@ const Auth = ({ onAuthSuccess }) => {
 		<div className="teknup-auth-container">
 			<div className="teknup-auth-header">
 				<h2>Teknup AI Mastering</h2>
-				<p>Professional audio mastering powered by Dolby.io</p>
+				<p>Professional audio mastering by AI</p>
 			</div>
 
 			{/* Tabs Navigation */}

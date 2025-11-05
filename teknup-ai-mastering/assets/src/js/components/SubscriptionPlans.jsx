@@ -11,11 +11,7 @@ const SubscriptionPlans = () => {
 
 	const fetchPlans = async () => {
 		try {
-			const response = await fetch(teknupData.restUrl + 'subscription-plans', {
-				headers: {
-					'X-WP-Nonce': teknupData.nonce,
-				},
-			});
+			const response = await fetch(teknupData.restUrl + 'subscription-plans');
 
 			const data = await response.json();
 
