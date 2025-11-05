@@ -1,0 +1,501 @@
+/**
+ * Teknup AI Mastering Styles
+ * Design system: Dark theme with red accents
+ */
+
+:root {
+	/* Colors */
+	--teknup-red-dark: #8B0000;
+	--teknup-red: #DC143C;
+	--teknup-red-light: #FF6B6B;
+	--teknup-white: #FFFFFF;
+	--teknup-gray-light: #CCCCCC;
+	--teknup-gray: #999999;
+	--teknup-gray-dark: #666666;
+	--teknup-bg-dark: #0A0A0A;
+	--teknup-bg-card: rgba(255, 255, 255, 0.05);
+	--teknup-border: rgba(220, 20, 60, 0.3);
+
+	/* Spacing */
+	--teknup-spacing-xs: 4px;
+	--teknup-spacing-sm: 8px;
+	--teknup-spacing-md: 16px;
+	--teknup-spacing-lg: 24px;
+	--teknup-spacing-xl: 32px;
+	--teknup-spacing-xxl: 48px;
+
+	/* Border radius */
+	--teknup-radius-sm: 4px;
+	--teknup-radius-md: 8px;
+	--teknup-radius-lg: 12px;
+
+	/* Shadows */
+	--teknup-shadow-glow: 0 0 20px rgba(220, 20, 60, 0.3);
+	--teknup-shadow-card: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* General Styles */
+.teknup-upload-page,
+.teknup-dashboard-page,
+.teknup-history-page {
+	background: var(--teknup-bg-dark);
+	padding: var(--teknup-spacing-lg);
+	min-height: 500px;
+}
+
+/* Cards */
+.teknup-card {
+	background: var(--teknup-bg-card);
+	border: 1px solid var(--teknup-border);
+	border-radius: var(--teknup-radius-lg);
+	padding: var(--teknup-spacing-lg);
+	backdrop-filter: blur(10px);
+	transition: all 0.3s ease;
+}
+
+.teknup-card:hover {
+	border-color: var(--teknup-red);
+	box-shadow: var(--teknup-shadow-glow);
+}
+
+/* Glass morphism effect */
+.teknup-glass {
+	background: rgba(255, 255, 255, 0.05);
+	backdrop-filter: blur(10px);
+	border: 1px solid rgba(220, 20, 60, 0.2);
+}
+
+/* Buttons */
+.teknup-button {
+	background: linear-gradient(135deg, var(--teknup-red) 0%, var(--teknup-red-dark) 100%);
+	color: var(--teknup-white);
+	border: none;
+	padding: var(--teknup-spacing-md) var(--teknup-spacing-xl);
+	border-radius: var(--teknup-radius-md);
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	box-shadow: var(--teknup-shadow-card);
+}
+
+.teknup-button:hover {
+	box-shadow: var(--teknup-shadow-glow);
+	transform: translateY(-2px);
+}
+
+.teknup-button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	transform: none;
+}
+
+.teknup-button-secondary {
+	background: transparent;
+	border: 1px solid var(--teknup-red);
+	color: var(--teknup-red);
+}
+
+.teknup-button-secondary:hover {
+	background: var(--teknup-red);
+	color: var(--teknup-white);
+}
+
+/* Upload Zone */
+.teknup-upload-zone {
+	border: 2px dashed var(--teknup-border);
+	border-radius: var(--teknup-radius-lg);
+	padding: var(--teknup-spacing-xxl);
+	text-align: center;
+	transition: all 0.3s ease;
+	cursor: pointer;
+	background: var(--teknup-bg-card);
+}
+
+.teknup-upload-zone:hover,
+.teknup-upload-zone.drag-over {
+	border-color: var(--teknup-red);
+	background: rgba(220, 20, 60, 0.1);
+}
+
+.teknup-upload-icon {
+	font-size: 48px;
+	margin-bottom: var(--teknup-spacing-md);
+	color: var(--teknup-red);
+}
+
+/* Progress Bar */
+.teknup-progress-bar {
+	width: 100%;
+	height: 8px;
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: var(--teknup-radius-md);
+	overflow: hidden;
+	margin: var(--teknup-spacing-md) 0;
+}
+
+.teknup-progress-fill {
+	height: 100%;
+	background: linear-gradient(90deg, var(--teknup-red) 0%, var(--teknup-red-light) 100%);
+	transition: width 0.3s ease;
+	box-shadow: 0 0 10px var(--teknup-red);
+}
+
+/* Status Badges */
+.teknup-status-badge {
+	display: inline-block;
+	padding: var(--teknup-spacing-xs) var(--teknup-spacing-md);
+	border-radius: var(--teknup-radius-sm);
+	font-size: 12px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.teknup-status-pending {
+	background: rgba(255, 193, 7, 0.2);
+	color: #FFC107;
+	border: 1px solid rgba(255, 193, 7, 0.5);
+}
+
+.teknup-status-uploaded,
+.teknup-status-sent_to_dolby,
+.teknup-status-processing {
+	background: rgba(33, 150, 243, 0.2);
+	color: #2196F3;
+	border: 1px solid rgba(33, 150, 243, 0.5);
+}
+
+.teknup-status-completed {
+	background: rgba(76, 175, 80, 0.2);
+	color: #4CAF50;
+	border: 1px solid rgba(76, 175, 80, 0.5);
+}
+
+.teknup-status-failed {
+	background: rgba(244, 67, 54, 0.2);
+	color: #F44336;
+	border: 1px solid rgba(244, 67, 54, 0.5);
+}
+
+/* Typography */
+.teknup-heading {
+	color: var(--teknup-white);
+	text-transform: uppercase;
+	letter-spacing: 2px;
+	font-weight: 700;
+	margin-bottom: var(--teknup-spacing-lg);
+}
+
+.teknup-text {
+	color: var(--teknup-gray-light);
+	line-height: 1.6;
+}
+
+.teknup-text-secondary {
+	color: var(--teknup-gray);
+	font-size: 14px;
+}
+
+/* Form Elements */
+.teknup-input,
+.teknup-select {
+	background: rgba(255, 255, 255, 0.05);
+	border: 1px solid var(--teknup-border);
+	border-radius: var(--teknup-radius-md);
+	padding: var(--teknup-spacing-md);
+	color: var(--teknup-white);
+	width: 100%;
+	font-size: 14px;
+	transition: all 0.3s ease;
+}
+
+.teknup-input:focus,
+.teknup-select:focus {
+	outline: none;
+	border-color: var(--teknup-red);
+	box-shadow: 0 0 0 2px rgba(220, 20, 60, 0.2);
+}
+
+.teknup-label {
+	color: var(--teknup-gray-light);
+	font-weight: 600;
+	margin-bottom: var(--teknup-spacing-sm);
+	display: block;
+	text-transform: uppercase;
+	font-size: 12px;
+	letter-spacing: 1px;
+}
+
+/* Audio Player */
+.teknup-audio-player {
+	background: var(--teknup-glass);
+	border-radius: var(--teknup-radius-lg);
+	padding: var(--teknup-spacing-lg);
+	margin: var(--teknup-spacing-lg) 0;
+}
+
+.teknup-audio-controls {
+	display: flex;
+	align-items: center;
+	gap: var(--teknup-spacing-md);
+	margin-bottom: var(--teknup-spacing-md);
+}
+
+.teknup-play-button {
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	background: var(--teknup-red);
+	border: none;
+	color: var(--teknup-white);
+	font-size: 20px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.3s ease;
+}
+
+.teknup-play-button:hover {
+	box-shadow: var(--teknup-shadow-glow);
+	transform: scale(1.1);
+}
+
+.teknup-timeline {
+	flex: 1;
+	height: 6px;
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: var(--teknup-radius-md);
+	cursor: pointer;
+	position: relative;
+}
+
+.teknup-timeline-progress {
+	height: 100%;
+	background: var(--teknup-red);
+	border-radius: var(--teknup-radius-md);
+	position: relative;
+}
+
+/* Stats Dashboard */
+.teknup-stats-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: var(--teknup-spacing-lg);
+	margin-bottom: var(--teknup-spacing-xl);
+}
+
+.teknup-stat-card {
+	background: var(--teknup-glass);
+	padding: var(--teknup-spacing-lg);
+	border-radius: var(--teknup-radius-lg);
+	border: 1px solid var(--teknup-border);
+	transition: all 0.3s ease;
+}
+
+.teknup-stat-card:hover {
+	border-color: var(--teknup-red);
+	box-shadow: var(--teknup-shadow-glow);
+}
+
+.teknup-stat-value {
+	font-size: 36px;
+	font-weight: 700;
+	color: var(--teknup-red);
+	margin-bottom: var(--teknup-spacing-sm);
+}
+
+.teknup-stat-label {
+	color: var(--teknup-gray-light);
+	text-transform: uppercase;
+	font-size: 12px;
+	letter-spacing: 1px;
+}
+
+/* Jobs List */
+.teknup-jobs-list {
+	background: var(--teknup-glass);
+	border-radius: var(--teknup-radius-lg);
+	overflow: hidden;
+}
+
+.teknup-job-item {
+	padding: var(--teknup-spacing-lg);
+	border-bottom: 1px solid var(--teknup-border);
+	transition: all 0.3s ease;
+}
+
+.teknup-job-item:hover {
+	background: rgba(220, 20, 60, 0.05);
+}
+
+.teknup-job-item:last-child {
+	border-bottom: none;
+}
+
+.teknup-job-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: var(--teknup-spacing-sm);
+}
+
+.teknup-job-title {
+	color: var(--teknup-white);
+	font-weight: 700;
+	font-size: 16px;
+}
+
+.teknup-job-meta {
+	display: flex;
+	gap: var(--teknup-spacing-lg);
+	color: var(--teknup-gray);
+	font-size: 14px;
+}
+
+.teknup-job-actions {
+	display: flex;
+	gap: var(--teknup-spacing-sm);
+	margin-top: var(--teknup-spacing-md);
+}
+
+/* Loading Spinner */
+.teknup-spinner {
+	border: 3px solid rgba(255, 255, 255, 0.1);
+	border-top-color: var(--teknup-red);
+	border-radius: 50%;
+	width: 40px;
+	height: 40px;
+	animation: teknup-spin 1s linear infinite;
+	margin: var(--teknup-spacing-lg) auto;
+}
+
+@keyframes teknup-spin {
+	to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.teknup-stats-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.teknup-job-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--teknup-spacing-sm);
+	}
+
+	.teknup-job-meta {
+		flex-direction: column;
+		gap: var(--teknup-spacing-xs);
+	}
+}
+
+/* Admin Dashboard Specific Styles */
+.teknup-dashboard .teknup-stats-cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: var(--teknup-spacing-lg);
+	margin-bottom: var(--teknup-spacing-xl);
+}
+
+.teknup-dashboard .teknup-stat-card {
+	display: flex;
+	align-items: center;
+	gap: var(--teknup-spacing-md);
+}
+
+.teknup-dashboard .teknup-stat-icon {
+	font-size: 32px;
+}
+
+.teknup-dashboard .teknup-chart-container {
+	background: white;
+	padding: var(--teknup-spacing-lg);
+	border-radius: var(--teknup-radius-md);
+	margin-bottom: var(--teknup-spacing-xl);
+}
+
+.teknup-dashboard .teknup-chart-container canvas {
+	max-height: 300px;
+}
+
+/* Tabs */
+.teknup-tabs {
+	display: flex;
+	gap: var(--teknup-spacing-md);
+	margin-bottom: var(--teknup-spacing-xl);
+	border-bottom: 2px solid var(--teknup-border);
+	padding-bottom: var(--teknup-spacing-sm);
+}
+
+.teknup-tab {
+	background: transparent;
+	border: none;
+	color: var(--teknup-gray-light);
+	padding: var(--teknup-spacing-md) var(--teknup-spacing-lg);
+	cursor: pointer;
+	font-size: 16px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	transition: all 0.3s ease;
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: var(--teknup-spacing-sm);
+}
+
+.teknup-tab:hover {
+	color: var(--teknup-red-light);
+}
+
+.teknup-tab.active {
+	color: var(--teknup-red);
+}
+
+.teknup-tab.active::after {
+	content: '';
+	position: absolute;
+	bottom: -10px;
+	left: 0;
+	right: 0;
+	height: 2px;
+	background: linear-gradient(90deg, var(--teknup-red) 0%, var(--teknup-red-light) 100%);
+	box-shadow: 0 0 10px var(--teknup-red);
+}
+
+.teknup-tab-icon {
+	font-size: 20px;
+}
+
+.teknup-tab-content {
+	animation: teknup-fade-in 0.5s ease;
+}
+
+/* Mastering App Container */
+.teknup-mastering-app {
+	background: var(--teknup-bg-dark);
+	padding: var(--teknup-spacing-lg);
+	min-height: 500px;
+}
+
+/* Animations */
+@keyframes teknup-fade-in {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.teknup-fade-in {
+	animation: teknup-fade-in 0.5s ease;
+}
+

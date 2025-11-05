@@ -3,7 +3,7 @@ node_modules/
 package-lock.json
 
 # Build files
-assets/dist/
+# assets/dist/ - Commenting this out so built files are committed for WordPress plugin distribution
 
 # IDE files
 .vscode/
