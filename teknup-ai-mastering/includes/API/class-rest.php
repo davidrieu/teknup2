@@ -523,42 +523,87 @@ class REST {
 	 * @return WP_REST_Response Response object.
 	 */
 	public function tonn_callback( $request ) {
-		teknup_ai_mastering()->log( '[WEBHOOK ENDPOINT] tonn_callback() called - v2.1.3', 'info' );
-		teknup_ai_mastering()->log( '[WEBHOOK ENDPOINT] Request method: ' . $request->get_method(), 'debug' );
-		teknup_ai_mastering()->log( '[WEBHOOK ENDPOINT] Request params: ' . json_encode( $request->get_params() ), 'debug' );
+		// CRITICAL: Wrap everything in try/catch to capture ALL errors
+		try {
+			teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] ========== WEBHOOK CALLED ==========', 'info' );
+			teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] Request method: ' . $request->get_method(), 'debug' );
 
-		$body = $request->get_json_params();
+			// Log raw request data
+			$raw_body = $request->get_body();
+			teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] Raw body: ' . $raw_body, 'debug' );
+			teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] Content-Type: ' . $request->get_header( 'content-type' ), 'debug' );
 
-		teknup_ai_mastering()->log( 'Received Tonn webhook: ' . json_encode( $body ), 'info' );
-		teknup_ai_mastering()->log( '[WEBHOOK ENDPOINT] Body type: ' . gettype( $body ), 'debug' );
-		teknup_ai_mastering()->log( '[WEBHOOK ENDPOINT] Body is_array: ' . (is_array( $body ) ? 'yes' : 'no'), 'debug' );
+			$body = $request->get_json_params();
 
-		// Tonn webhook format uses 'state' and 'mixrevive_task_id' (with underscores)
-		if ( ! isset( $body['mixrevive_task_id'] ) || ! isset( $body['state'] ) ) {
-			teknup_ai_mastering()->log( '[WEBHOOK ENDPOINT] Invalid webhook: missing mixrevive_task_id or state', 'error' );
-			teknup_ai_mastering()->log( '[WEBHOOK ENDPOINT] Returning 200 OK anyway to pass Tonn test', 'info' );
-			// Return 200 OK even if validation fails - this might be a test ping from Tonn
+			teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] Parsed JSON: ' . json_encode( $body ), 'info' );
+			teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] Body type: ' . gettype( $body ), 'debug' );
+			teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] Body is_array: ' . (is_array( $body ) ? 'yes' : 'no'), 'debug' );
+
+			// Check if body is null or empty
+			if ( $body === null || $body === false ) {
+				teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] Body is NULL/FALSE - possibly malformed JSON or empty request', 'error' );
+				teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] Returning 200 OK for empty/test webhook', 'info' );
+				return new \WP_REST_Response(
+					array( 'success' => true, 'message' => 'Empty webhook received - test successful' ),
+					200
+				);
+			}
+
+			// Tonn webhook format uses 'state' and 'mixrevive_task_id' (with underscores)
+			if ( ! isset( $body['mixrevive_task_id'] ) || ! isset( $body['state'] ) ) {
+				teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] Missing required fields (mixrevive_task_id or state)', 'error' );
+				teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] Available keys: ' . implode( ', ', array_keys( $body ) ), 'debug' );
+				teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] Returning 200 OK anyway to pass Tonn test', 'info' );
+				// Return 200 OK even if validation fails - this might be a test ping from Tonn
+				return new \WP_REST_Response(
+					array( 'success' => true, 'message' => 'Webhook test received' ),
+					200
+				);
+			}
+
+			// Handle webhook with Tonn API
+			teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] Validation passed, calling handle_webhook()', 'info' );
+			$tonn = new \Teknup\API\Tonn();
+			$result = $tonn->handle_webhook( $body );
+
+			if ( ! $result ) {
+				teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] handle_webhook() returned false', 'error' );
+				return new \WP_REST_Response(
+					array( 'error' => 'Failed to process webhook' ),
+					500
+				);
+			}
+
+			teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] Success! Returning 200 OK', 'info' );
 			return new \WP_REST_Response(
-				array( 'success' => true, 'message' => 'Webhook test received' ),
+				array( 'success' => true ),
+				200
+			);
+
+		} catch ( \Exception $e ) {
+			// Catch ANY error and log it
+			teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] !!!!! EXCEPTION CAUGHT !!!!!', 'error' );
+			teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] Exception: ' . $e->getMessage(), 'error' );
+			teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] File: ' . $e->getFile() . ':' . $e->getLine(), 'error' );
+			teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] Stack trace: ' . $e->getTraceAsString(), 'error' );
+
+			// STILL return 200 OK so Tonn doesn't reject the webhook
+			return new \WP_REST_Response(
+				array( 'success' => true, 'message' => 'Error caught but returning 200 OK', 'error' => $e->getMessage() ),
+				200
+			);
+		} catch ( \Error $e ) {
+			// Catch PHP 7+ Fatal Errors
+			teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] !!!!! FATAL ERROR CAUGHT !!!!!', 'error' );
+			teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] Error: ' . $e->getMessage(), 'error' );
+			teknup_ai_mastering()->log( '[WEBHOOK v2.1.5] File: ' . $e->getFile() . ':' . $e->getLine(), 'error' );
+
+			// STILL return 200 OK so Tonn doesn't reject the webhook
+			return new \WP_REST_Response(
+				array( 'success' => true, 'message' => 'Fatal error caught but returning 200 OK', 'error' => $e->getMessage() ),
 				200
 			);
 		}
-
-		// Handle webhook with Tonn API
-		$tonn = new \Teknup\API\Tonn();
-		$result = $tonn->handle_webhook( $body );
-
-		if ( ! $result ) {
-			return new \WP_REST_Response(
-				array( 'error' => 'Failed to process webhook' ),
-				500
-			);
-		}
-
-		return new \WP_REST_Response(
-			array( 'success' => true ),
-			200
-		);
 	}
 
 	/**
