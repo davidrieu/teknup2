@@ -162,7 +162,7 @@ class Replicate {
 		$body = array(
 			'input' => $input,
 			'webhook' => $webhook_url,
-			'webhook_events_filter' => array( 'completed', 'failed' ),
+			'webhook_events_filter' => array( 'completed' ), // Only 'completed' - includes both success and failure
 		);
 
 		// Make request to model-specific endpoint
@@ -206,7 +206,7 @@ class Replicate {
 		$body = array(
 			'input' => $input,
 			'webhook' => $webhook_url,
-			'webhook_events_filter' => array( 'completed', 'failed' ),
+			'webhook_events_filter' => array( 'completed' ), // Only 'completed' - includes both success and failure
 		);
 
 		// Make request to model-specific endpoint
