@@ -97,7 +97,7 @@ class Tonn {
 		}
 
 		// Store Tonn task ID
-		$tonn_task_id = isset( $response['mixEnhanceTaskId'] ) ? $response['mixEnhanceTaskId'] : null;
+		$tonn_task_id = isset( $response['mixReviveTaskId'] ) ? $response['mixReviveTaskId'] : null;
 
 		if ( ! $tonn_task_id ) {
 			return new \WP_Error( 'no_task_id', __( 'No task ID returned from Tonn.', 'teknup-ai-mastering' ) );
@@ -191,7 +191,7 @@ class Tonn {
 	}
 
 	/**
-	 * Submit mix enhance job (mastering)
+	 * Submit mix revive job (mastering)
 	 *
 	 * @param int    $job_id Job ID.
 	 * @param string $audio_url Uploaded audio URL.
@@ -205,27 +205,28 @@ class Tonn {
 
 		teknup_ai_mastering()->log( "Webhook URL: {$webhook_url}", 'debug' );
 
-		// Prepare mix enhance parameters (mastering)
+		// Prepare mix revive parameters (mastering)
 		$body = array(
-			'mixEnhanceData' => array(
+			'mixReviveData' => array(
 				'audioFileLocation' => $audio_url,
 				'musicalStyle' => isset( $settings['musical_style'] ) ? strtoupper( $settings['musical_style'] ) : 'POP',
-				'fixLoudness' => isset( $settings['fix_loudness'] ) ? (bool) $settings['fix_loudness'] : true,
-				'fixStereoWidth' => isset( $settings['fix_stereo_width'] ) ? (bool) $settings['fix_stereo_width'] : true,
-				'fixTonalProfile' => isset( $settings['fix_tonal_profile'] ) ? (bool) $settings['fix_tonal_profile'] : true,
+				'isMaster' => isset( $settings['is_master'] ) ? (bool) $settings['is_master'] : false,
+				'fixClippingIssues' => isset( $settings['fix_clipping'] ) ? (bool) $settings['fix_clipping'] : true,
+				'fixLoudnessIssues' => isset( $settings['fix_loudness'] ) ? (bool) $settings['fix_loudness'] : true,
+				'fixStereoWidthIssues' => isset( $settings['fix_stereo_width'] ) ? (bool) $settings['fix_stereo_width'] : true,
+				'fixTonalProfileIssues' => isset( $settings['fix_tonal_profile'] ) ? (bool) $settings['fix_tonal_profile'] : true,
 				'applyMastering' => isset( $settings['apply_mastering'] ) ? (bool) $settings['apply_mastering'] : true,
-				'desiredLoudness' => isset( $settings['desired_loudness'] ) ? $settings['desired_loudness'] : 'STREAMING_LOUDNESS',
-				'returnStems' => false,
-				'sampleRate' => isset( $settings['sample_rate'] ) ? (int) $settings['sample_rate'] : 44100,
+				'stemProcessing' => false, // No stems for basic mastering
+				'loudnessPreference' => isset( $settings['loudness_preference'] ) ? $settings['loudness_preference'] : 'STREAMING_LOUDNESS',
 				'webhookURL' => $webhook_url,
 			),
 		);
 
-		return $this->make_request( 'POST', '/mixenhance', $body );
+		return $this->make_request( 'POST', '/mixrevive', $body );
 	}
 
 	/**
-	 * Submit mix enhance with stem separation
+	 * Submit mix revive with stem separation
 	 *
 	 * @param int    $job_id Job ID.
 	 * @param string $audio_url Uploaded audio URL.
@@ -237,23 +238,25 @@ class Tonn {
 
 		$webhook_url = rest_url( 'teknup/v1/tonn/callback' );
 
-		// Mix Enhance + Stem Processing
+		// Mix Revive + Stem Processing
 		$body = array(
-			'mixEnhanceData' => array(
+			'mixReviveData' => array(
 				'audioFileLocation' => $audio_url,
 				'musicalStyle' => isset( $settings['musical_style'] ) ? strtoupper( $settings['musical_style'] ) : 'POP',
-				'fixLoudness' => isset( $settings['fix_loudness'] ) ? (bool) $settings['fix_loudness'] : true,
-				'fixStereoWidth' => isset( $settings['fix_stereo_width'] ) ? (bool) $settings['fix_stereo_width'] : true,
-				'fixTonalProfile' => isset( $settings['fix_tonal_profile'] ) ? (bool) $settings['fix_tonal_profile'] : true,
+				'isMaster' => isset( $settings['is_master'] ) ? (bool) $settings['is_master'] : false,
+				'fixClippingIssues' => isset( $settings['fix_clipping'] ) ? (bool) $settings['fix_clipping'] : true,
+				'fixLoudnessIssues' => isset( $settings['fix_loudness'] ) ? (bool) $settings['fix_loudness'] : true,
+				'fixStereoWidthIssues' => isset( $settings['fix_stereo_width'] ) ? (bool) $settings['fix_stereo_width'] : true,
+				'fixTonalProfileIssues' => isset( $settings['fix_tonal_profile'] ) ? (bool) $settings['fix_tonal_profile'] : true,
 				'applyMastering' => isset( $settings['apply_mastering'] ) ? (bool) $settings['apply_mastering'] : true,
-				'desiredLoudness' => isset( $settings['desired_loudness'] ) ? $settings['desired_loudness'] : 'STREAMING_LOUDNESS',
-				'returnStems' => true, // Enable stem separation
-				'sampleRate' => isset( $settings['sample_rate'] ) ? (int) $settings['sample_rate'] : 44100,
+				'stemProcessing' => true, // Enable stem separation
+				'getProcessedStems' => true, // Get processed stems
+				'loudnessPreference' => isset( $settings['loudness_preference'] ) ? $settings['loudness_preference'] : 'STREAMING_LOUDNESS',
 				'webhookURL' => $webhook_url,
 			),
 		);
 
-		return $this->make_request( 'POST', '/mixenhance', $body );
+		return $this->make_request( 'POST', '/mixrevive', $body );
 	}
 
 	/**
@@ -263,13 +266,13 @@ class Tonn {
 	 * @return array|WP_Error Status data or error.
 	 */
 	public function check_job_status( $tonn_task_id ) {
-		// Retrieve mix enhance results
+		// Retrieve mix revive results
 		return $this->make_request(
 			'POST',
-			'/retrievemixenhance',
+			'/retrievemixrevive',
 			array(
-				'mixEnhanceData' => array(
-					'mixEnhanceTaskId' => $tonn_task_id,
+				'mixReviveData' => array(
+					'mixReviveTaskId' => $tonn_task_id,
 				),
 			)
 		);
@@ -375,13 +378,13 @@ class Tonn {
 	public function handle_webhook( $data ) {
 		teknup_ai_mastering()->log( 'Processing Tonn webhook: ' . json_encode( $data ), 'debug' );
 
-		// Tonn Mix Enhance webhook format
-		if ( ! isset( $data['mixEnhanceTaskId'] ) || ! isset( $data['status'] ) ) {
+		// Tonn Mix Revive webhook format
+		if ( ! isset( $data['mixReviveTaskId'] ) || ! isset( $data['status'] ) ) {
 			teknup_ai_mastering()->log( 'Invalid webhook data from Tonn - missing required fields', 'error' );
 			return false;
 		}
 
-		$tonn_task_id = $data['mixEnhanceTaskId'];
+		$tonn_task_id = $data['mixReviveTaskId'];
 		$status = $data['status'];
 
 		// Find job by Tonn task ID
@@ -405,10 +408,10 @@ class Tonn {
 
 		teknup_ai_mastering()->log( "Webhook received for job {$job_id}, status: {$status}", 'info' );
 
-		// Check status
-		if ( $status === 'MIX_ENHANCE_COMPLETED' ) {
+		// Check status - handle both MIX_REVIVE and MIX_ENHANCE formats
+		if ( $status === 'MIX_REVIVE_COMPLETED' || $status === 'MIX_ENHANCE_COMPLETED' ) {
 			return $this->handle_success( $job_id, $data );
-		} elseif ( $status === 'MIX_ENHANCE_FAILED' || $status === 'ERROR' ) {
+		} elseif ( $status === 'MIX_REVIVE_FAILED' || $status === 'MIX_ENHANCE_FAILED' || $status === 'ERROR' ) {
 			return $this->handle_failure( $job_id, $data );
 		}
 
@@ -423,10 +426,17 @@ class Tonn {
 	 * @return bool Success status.
 	 */
 	private function handle_success( $job_id, $data ) {
-		// Get enhanced mix download URL
-		$download_url = isset( $data['mixEnhanceTaskResults']['enhancedMixDownloadURL'] )
-			? $data['mixEnhanceTaskResults']['enhancedMixDownloadURL']
-			: null;
+		// Get revived/enhanced mix download URL - support both formats
+		$download_url = null;
+
+		if ( isset( $data['mixReviveTaskResults']['revivedMixDownloadURL'] ) ) {
+			$download_url = $data['mixReviveTaskResults']['revivedMixDownloadURL'];
+		} elseif ( isset( $data['mixReviveTaskResults']['enhancedMixDownloadURL'] ) ) {
+			$download_url = $data['mixReviveTaskResults']['enhancedMixDownloadURL'];
+		} elseif ( isset( $data['mixEnhanceTaskResults']['enhancedMixDownloadURL'] ) ) {
+			// Fallback to old format
+			$download_url = $data['mixEnhanceTaskResults']['enhancedMixDownloadURL'];
+		}
 
 		if ( ! $download_url ) {
 			teknup_ai_mastering()->log( "No download URL in webhook for job {$job_id}", 'error' );
@@ -439,8 +449,14 @@ class Tonn {
 		$job_type = isset( $settings['job_type'] ) ? $settings['job_type'] : 'mastering';
 
 		// Handle stems if they were requested
-		if ( $job_type === 'stem_separation' && isset( $data['mixEnhanceTaskResults']['stemsDownloadURLs'] ) ) {
+		$stems = null;
+		if ( isset( $data['mixReviveTaskResults']['stemsDownloadURLs'] ) ) {
+			$stems = $data['mixReviveTaskResults']['stemsDownloadURLs'];
+		} elseif ( isset( $data['mixEnhanceTaskResults']['stemsDownloadURLs'] ) ) {
 			$stems = $data['mixEnhanceTaskResults']['stemsDownloadURLs'];
+		}
+
+		if ( $job_type === 'stem_separation' && $stems ) {
 			return $this->save_stems( $job_id, $stems, $download_url );
 		} else {
 			// Save mastered file
