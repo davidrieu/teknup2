@@ -43,7 +43,7 @@ class REST {
 			array(
 				'methods' => 'GET',
 				'callback' => array( $this, 'get_quota' ),
-				'permission_callback' => array( $this, 'check_user_permission' ),
+				'permission_callback' => array( $this, 'check_subscription_permission' ),
 			)
 		);
 
@@ -54,7 +54,7 @@ class REST {
 			array(
 				'methods' => 'POST',
 				'callback' => array( $this, 'upload_file' ),
-				'permission_callback' => array( $this, 'check_user_permission' ),
+				'permission_callback' => array( $this, 'check_subscription_permission' ),
 			)
 		);
 
@@ -65,7 +65,7 @@ class REST {
 			array(
 				'methods' => 'GET',
 				'callback' => array( $this, 'get_job' ),
-				'permission_callback' => array( $this, 'check_user_permission' ),
+				'permission_callback' => array( $this, 'check_subscription_permission' ),
 				'args' => array(
 					'id' => array(
 						'required' => true,
@@ -82,7 +82,7 @@ class REST {
 			array(
 				'methods' => 'GET',
 				'callback' => array( $this, 'get_jobs' ),
-				'permission_callback' => array( $this, 'check_user_permission' ),
+				'permission_callback' => array( $this, 'check_subscription_permission' ),
 			)
 		);
 
@@ -93,7 +93,7 @@ class REST {
 			array(
 				'methods' => 'DELETE',
 				'callback' => array( $this, 'delete_job' ),
-				'permission_callback' => array( $this, 'check_user_permission' ),
+				'permission_callback' => array( $this, 'check_subscription_permission' ),
 				'args' => array(
 					'id' => array(
 						'required' => true,
@@ -110,7 +110,7 @@ class REST {
 			array(
 				'methods' => 'POST',
 				'callback' => array( $this, 'retry_job' ),
-				'permission_callback' => array( $this, 'check_user_permission' ),
+				'permission_callback' => array( $this, 'check_subscription_permission' ),
 				'args' => array(
 					'id' => array(
 						'required' => true,
@@ -205,6 +205,33 @@ class REST {
 	 */
 	public function check_user_permission() {
 		return is_user_logged_in();
+	}
+
+	/**
+	 * Check subscription permission
+	 *
+	 * @return bool|WP_Error True if user has active subscription, error otherwise.
+	 */
+	public function check_subscription_permission() {
+		if ( ! is_user_logged_in() ) {
+			return new \WP_Error(
+				'not_logged_in',
+				__( 'You must be logged in to access this resource', 'teknup-ai-mastering' ),
+				array( 'status' => 401 )
+			);
+		}
+
+		$has_subscription = teknup_ai_mastering()->subscriptions->has_active_subscription();
+
+		if ( ! $has_subscription ) {
+			return new \WP_Error(
+				'no_active_subscription',
+				__( 'You need an active subscription to use this feature', 'teknup-ai-mastering' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		return true;
 	}
 
 	/**

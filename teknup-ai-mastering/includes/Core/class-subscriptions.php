@@ -326,4 +326,34 @@ class Subscriptions {
 			'percentage' => $limit === -1 ? 0 : min( 100, round( ( $usage / $limit ) * 100, 2 ) ),
 		);
 	}
+
+	/**
+	 * Check if user has an active subscription (paid or free trial)
+	 *
+	 * @param int $user_id User ID.
+	 * @return bool True if user has active subscription or free trial.
+	 */
+	public function has_active_subscription( $user_id = null ) {
+		if ( ! $user_id ) {
+			$user_id = get_current_user_id();
+		}
+
+		// Check for active paid subscription
+		$subscription = $this->get_user_subscription( $user_id );
+		if ( $subscription ) {
+			return true;
+		}
+
+		// Check for free trial
+		$trial_used = get_user_meta( $user_id, 'teknup_trial_used', true );
+		$trial_count = get_user_meta( $user_id, 'teknup_trial_count', true );
+
+		// User has free trial if they haven't used it or haven't reached the limit
+		if ( ! $trial_used || (int) $trial_count < 3 ) {
+			return true;
+		}
+
+		// No active subscription or trial
+		return false;
+	}
 }

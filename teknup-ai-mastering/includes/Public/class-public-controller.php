@@ -83,6 +83,11 @@ class Public_Controller {
 			true
 		);
 
+		$has_subscription = false;
+		if ( is_user_logged_in() ) {
+			$has_subscription = teknup_ai_mastering()->subscriptions->has_active_subscription();
+		}
+
 		wp_localize_script(
 			'teknup-main',
 			'teknupData',
@@ -93,6 +98,7 @@ class Public_Controller {
 				'allowedTypes' => array( 'audio/wav', 'audio/mpeg', 'audio/mp3', 'audio/flac', 'audio/aiff' ),
 				'allowedExtensions' => array( 'wav', 'mp3', 'flac', 'aiff', 'aif' ),
 				'isLoggedIn' => is_user_logged_in(),
+				'hasActiveSubscription' => $has_subscription,
 				'siteUrl' => home_url(),
 			)
 		);
