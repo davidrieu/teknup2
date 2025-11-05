@@ -40,20 +40,20 @@ class Settings {
 			)
 		);
 
-		// Dolby.io section
+		// Replicate.com section
 		add_settings_section(
-			'teknup_dolby_section',
-			__( 'Dolby.io API Configuration', 'teknup-ai-mastering' ),
-			array( $this, 'render_dolby_section' ),
+			'teknup_replicate_section',
+			__( 'Replicate.com API Configuration', 'teknup-ai-mastering' ),
+			array( $this, 'render_replicate_section' ),
 			'teknup_settings'
 		);
 
 		add_settings_field(
-			'dolby_api_key',
-			__( 'API Key', 'teknup-ai-mastering' ),
-			array( $this, 'render_api_key_field' ),
+			'replicate_api_token',
+			__( 'API Token', 'teknup-ai-mastering' ),
+			array( $this, 'render_api_token_field' ),
 			'teknup_settings',
-			'teknup_dolby_section'
+			'teknup_replicate_section'
 		);
 
 		// WooCommerce section
@@ -138,8 +138,8 @@ class Settings {
 	public function sanitize_settings( $input ) {
 		$sanitized = array();
 
-		if ( isset( $input['dolby_api_key'] ) ) {
-			$sanitized['dolby_api_key'] = sanitize_text_field( $input['dolby_api_key'] );
+		if ( isset( $input['replicate_api_token'] ) ) {
+			$sanitized['replicate_api_token'] = sanitize_text_field( $input['replicate_api_token'] );
 		}
 
 		if ( isset( $input['max_file_size'] ) ) {
@@ -167,8 +167,8 @@ class Settings {
 	/**
 	 * Render Dolby section description
 	 */
-	public function render_dolby_section() {
-		echo '<p>' . esc_html__( 'Configure your Dolby.io Media Enhancement API credentials. You can get your API key from the Dolby.io dashboard.', 'teknup-ai-mastering' ) . '</p>';
+	public function render_replicate_section() {
+		echo '<p>' . esc_html__( 'Configure your Replicate.com API credentials. You can get your API token from your Replicate account at replicate.com/account/api-tokens.', 'teknup-ai-mastering' ) . '</p>';
 	}
 
 	/**
@@ -267,15 +267,15 @@ class Settings {
 	}
 
 	/**
-	 * Render API key field
+	 * Render API token field
 	 */
-	public function render_api_key_field() {
-		$value = teknup_ai_mastering()->get_setting( 'dolby_api_key', '' );
+	public function render_api_token_field() {
+		$value = teknup_ai_mastering()->get_setting( 'replicate_api_token', '' );
 		?>
 		<input
 			type="password"
-			name="teknup_settings[dolby_api_key]"
-			id="dolby_api_key"
+			name="teknup_settings[replicate_api_token]"
+			id="replicate_api_token"
 			value="<?php echo esc_attr( $value ); ?>"
 			class="regular-text"
 		/>
@@ -284,7 +284,7 @@ class Settings {
 		</button>
 		<span id="api-connection-status"></span>
 		<p class="description">
-			<?php esc_html_e( 'Your Dolby.io API key. This is stored securely and never exposed to users.', 'teknup-ai-mastering' ); ?>
+			<?php esc_html_e( 'Your Replicate.com API token. Get it from replicate.com/account/api-tokens. This is stored securely and never exposed to users.', 'teknup-ai-mastering' ); ?>
 		</p>
 		<?php
 	}
@@ -430,15 +430,15 @@ class Settings {
 			wp_send_json_error( array( 'message' => __( 'API key is required.', 'teknup-ai-mastering' ) ) );
 		}
 
-		// Temporarily set the API key for testing
-		$current_key = teknup_ai_mastering()->get_setting( 'dolby_api_key' );
-		teknup_ai_mastering()->update_setting( 'dolby_api_key', $api_key );
+		// Temporarily set the API token for testing
+		$current_token = teknup_ai_mastering()->get_setting( 'replicate_api_token' );
+		teknup_ai_mastering()->update_setting( 'replicate_api_token', $api_key );
 
-		$dolby = new Dolby();
-		$result = $dolby->test_connection();
+		$replicate = new \Teknup\API\Replicate();
+		$result = $replicate->test_connection();
 
-		// Restore original key
-		teknup_ai_mastering()->update_setting( 'dolby_api_key', $current_key );
+		// Restore original token
+		teknup_ai_mastering()->update_setting( 'replicate_api_token', $current_token );
 
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ) );

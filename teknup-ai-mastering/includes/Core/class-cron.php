@@ -7,7 +7,7 @@
 
 namespace Teknup\Core;
 
-use Teknup\API\Dolby;
+use Teknup\API\Replicate;
 
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) {
@@ -61,7 +61,7 @@ class Cron {
 			return;
 		}
 
-		$dolby = new Dolby();
+		$replicate = new Replicate();
 
 		foreach ( $pending_jobs as $job ) {
 			// Skip if job was recently created (give it some time)
@@ -69,9 +69,9 @@ class Cron {
 				continue;
 			}
 
-			// Check job status with Dolby
-			if ( ! empty( $job->dolby_job_id ) ) {
-				$status = $dolby->check_job_status( $job->dolby_job_id );
+			// Check job status with Replicate
+			if ( ! empty( $job->replicate_prediction_id ) ) {
+				$status = $replicate->check_job_status( $job->replicate_prediction_id );
 
 				if ( is_wp_error( $status ) ) {
 					teknup_ai_mastering()->log(
@@ -80,7 +80,7 @@ class Cron {
 					);
 
 					// If job has been processing for more than 15 minutes, mark as failed
-					if ( strtotime( $job->sent_to_dolby_at ) < strtotime( '-15 minutes' ) ) {
+					if ( strtotime( $job->sent_to_replicate_at ) < strtotime( '-15 minutes' ) ) {
 						teknup_ai_mastering()->jobs->update_status(
 							$job->id,
 							'failed',
@@ -91,10 +91,10 @@ class Cron {
 					continue;
 				}
 
-				// Update job based on Dolby status
-				$dolby->handle_job_status_update( $job->id, $status );
+				// Replicate handles webhooks, so status will be updated automatically
+				// We don't need to manually update job status here
 			} elseif ( $job->status === 'pending' ) {
-				// Job hasn't been sent to Dolby yet, mark as stuck if too old
+				// Job hasn't been sent to Replicate yet, mark as stuck if too old
 				if ( strtotime( $job->created_at ) < strtotime( '-10 minutes' ) ) {
 					teknup_ai_mastering()->jobs->update_status(
 						$job->id,

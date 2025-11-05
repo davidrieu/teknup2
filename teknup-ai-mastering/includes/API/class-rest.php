@@ -120,13 +120,13 @@ class REST {
 			)
 		);
 
-		// Dolby webhook callback
+		// Replicate webhook callback
 		register_rest_route(
 			$this->namespace,
-			'/dolby/callback',
+			'/replicate/callback',
 			array(
 				'methods' => 'POST',
-				'callback' => array( $this, 'dolby_callback' ),
+				'callback' => array( $this, 'replicate_callback' ),
 				'permission_callback' => '__return_true', // Public endpoint
 			)
 		);
@@ -497,39 +497,33 @@ class REST {
 	}
 
 	/**
-	 * Dolby webhook callback endpoint
+	 * Replicate webhook callback endpoint
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response Response object.
 	 */
-	public function dolby_callback( $request ) {
+	public function replicate_callback( $request ) {
 		$body = $request->get_json_params();
 
-		teknup_ai_mastering()->log( 'Received Dolby webhook: ' . json_encode( $body ), 'info' );
+		teknup_ai_mastering()->log( 'Received Replicate webhook: ' . json_encode( $body ), 'info' );
 
-		if ( ! isset( $body['job_id'] ) ) {
+		if ( ! isset( $body['id'] ) || ! isset( $body['status'] ) ) {
 			return new \WP_REST_Response(
-				array( 'error' => 'Missing job_id' ),
+				array( 'error' => 'Missing required fields' ),
 				400
 			);
 		}
 
-		$dolby_job_id = sanitize_text_field( $body['job_id'] );
+		// Handle webhook with Replicate API
+		$replicate = new \Teknup\API\Replicate();
+		$result = $replicate->handle_webhook( $body );
 
-		// Find job by Dolby job ID
-		$job = teknup_ai_mastering()->jobs->get_job_by_dolby_id( $dolby_job_id );
-
-		if ( ! $job ) {
-			teknup_ai_mastering()->log( "Job not found for Dolby job ID: {$dolby_job_id}", 'error' );
+		if ( ! $result ) {
 			return new \WP_REST_Response(
-				array( 'error' => 'Job not found' ),
-				404
+				array( 'error' => 'Failed to process webhook' ),
+				500
 			);
 		}
-
-		// Handle status update
-		$dolby = new Dolby();
-		$dolby->handle_job_status_update( $job->id, $body );
 
 		return new \WP_REST_Response(
 			array( 'success' => true ),

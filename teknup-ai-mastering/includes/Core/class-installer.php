@@ -84,20 +84,22 @@ class Installer {
 		$sql = "CREATE TABLE IF NOT EXISTS $table_name (
 			id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
 			user_id bigint(20) UNSIGNED NOT NULL,
-			dolby_job_id varchar(255) DEFAULT NULL,
+			replicate_prediction_id varchar(255) DEFAULT NULL,
 			original_filename varchar(255) NOT NULL,
 			original_filepath varchar(500) NOT NULL,
 			mastered_filepath varchar(500) DEFAULT NULL,
 			file_size bigint(20) UNSIGNED NOT NULL,
 			status varchar(50) NOT NULL DEFAULT 'pending',
+			job_type varchar(50) DEFAULT 'mastering',
 			intensity varchar(50) DEFAULT 'medium',
 			genre varchar(100) DEFAULT NULL,
 			target_lufs decimal(5,2) DEFAULT NULL,
 			error_message text DEFAULT NULL,
-			dolby_response longtext DEFAULT NULL,
+			stems_data longtext DEFAULT NULL,
+			settings longtext DEFAULT NULL,
 			created_at datetime NOT NULL,
 			uploaded_at datetime DEFAULT NULL,
-			sent_to_dolby_at datetime DEFAULT NULL,
+			sent_to_replicate_at datetime DEFAULT NULL,
 			processing_started_at datetime DEFAULT NULL,
 			completed_at datetime DEFAULT NULL,
 			failed_at datetime DEFAULT NULL,
@@ -106,7 +108,7 @@ class Installer {
 			KEY user_id (user_id),
 			KEY status (status),
 			KEY created_at (created_at),
-			KEY dolby_job_id (dolby_job_id)
+			KEY replicate_prediction_id (replicate_prediction_id)
 		) $charset_collate;";
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';

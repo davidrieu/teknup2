@@ -314,13 +314,13 @@ class Jobs {
 			array(
 				'error_message' => null,
 				'failed_at' => null,
-				'dolby_job_id' => null,
+				'replicate_prediction_id' => null,
 			)
 		);
 
-		// Send to Dolby
-		$dolby = new \Teknup\API\Dolby();
-		$result = $dolby->submit_job( $job_id );
+		// Send to Replicate
+		$replicate = new \Teknup\API\Replicate();
+		$result = $replicate->submit_job( $job_id );
 
 		return $result;
 	}
