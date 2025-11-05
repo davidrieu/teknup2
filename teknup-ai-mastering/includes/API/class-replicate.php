@@ -142,6 +142,15 @@ class Replicate {
 	private function submit_mastering( $job_id, $input_url, $job ) {
 		$settings = ! empty( $job->settings ) ? json_decode( $job->settings, true ) : array();
 
+		// Get model version
+		$version = $this->get_model_version( $this->mastering_model );
+		if ( ! $version ) {
+			return new \WP_Error(
+				'model_version_not_found',
+				__( 'Could not retrieve model version from Replicate. Please check your API token and try again.', 'teknup-ai-mastering' )
+			);
+		}
+
 		// Prepare mastering parameters
 		$input = array(
 			'input_file' => $input_url,
@@ -154,19 +163,19 @@ class Replicate {
 			$input['seed'] = (int) $settings['seed'];
 		}
 
-		// Use model name directly - Replicate will use the latest version
 		$webhook_url = rest_url( 'teknup/v1/replicate/callback' );
 
 		teknup_ai_mastering()->log( "Webhook URL: {$webhook_url}", 'debug' );
 
 		$body = array(
+			'version' => $version,
 			'input' => $input,
 			'webhook' => $webhook_url,
-			'webhook_events_filter' => array( 'completed' ), // Only 'completed' - includes both success and failure
+			'webhook_events_filter' => array( 'completed' ),
 		);
 
-		// Make request to model-specific endpoint
-		return $this->make_request( 'POST', "/models/{$this->mastering_model}/predictions", $body );
+		// Use correct Replicate predictions endpoint
+		return $this->make_request( 'POST', '/predictions', $body );
 	}
 
 	/**
@@ -179,6 +188,15 @@ class Replicate {
 	 */
 	private function submit_stem_separation( $job_id, $input_url, $job ) {
 		$settings = ! empty( $job->settings ) ? json_decode( $job->settings, true ) : array();
+
+		// Get model version
+		$version = $this->get_model_version( $this->stem_model );
+		if ( ! $version ) {
+			return new \WP_Error(
+				'model_version_not_found',
+				__( 'Could not retrieve stem separation model version from Replicate. Please check your API token and try again.', 'teknup-ai-mastering' )
+			);
+		}
 
 		// Prepare stem separation parameters
 		$input = array(
@@ -200,17 +218,17 @@ class Replicate {
 			$input['mp3_bitrate'] = (int) $settings['mp3_bitrate'];
 		}
 
-		// Use model name directly - Replicate will use the latest version
 		$webhook_url = rest_url( 'teknup/v1/replicate/callback' );
 
 		$body = array(
+			'version' => $version,
 			'input' => $input,
 			'webhook' => $webhook_url,
-			'webhook_events_filter' => array( 'completed' ), // Only 'completed' - includes both success and failure
+			'webhook_events_filter' => array( 'completed' ),
 		);
 
-		// Make request to model-specific endpoint
-		return $this->make_request( 'POST', "/models/{$this->stem_model}/predictions", $body );
+		// Use correct Replicate predictions endpoint
+		return $this->make_request( 'POST', '/predictions', $body );
 	}
 
 	/**
@@ -231,13 +249,27 @@ class Replicate {
 	 */
 	private function get_model_version( $model_name ) {
 		// Get latest version from Replicate API
+		teknup_ai_mastering()->log( "Fetching model version for: {$model_name}", 'debug' );
+
 		$response = $this->make_request( 'GET', "/models/{$model_name}" );
 
 		if ( is_wp_error( $response ) ) {
+			teknup_ai_mastering()->log(
+				"Failed to get model version for {$model_name}: " . $response->get_error_message(),
+				'error'
+			);
 			return null;
 		}
 
-		return isset( $response['latest_version']['id'] ) ? $response['latest_version']['id'] : null;
+		$version = isset( $response['latest_version']['id'] ) ? $response['latest_version']['id'] : null;
+
+		if ( $version ) {
+			teknup_ai_mastering()->log( "Model {$model_name} version: {$version}", 'debug' );
+		} else {
+			teknup_ai_mastering()->log( "No version found for model {$model_name}", 'error' );
+		}
+
+		return $version;
 	}
 
 	/**
