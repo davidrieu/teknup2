@@ -351,9 +351,24 @@ class REST {
 			);
 		}
 
+		teknup_ai_mastering()->log( "Job {$job_id} submitted successfully to Tonn, retrieving job data...", 'debug' );
+
 		// Get updated job
 		$job = teknup_ai_mastering()->jobs->get_job( $job_id );
+
+		if ( ! $job ) {
+			teknup_ai_mastering()->log( "ERROR: Could not retrieve job {$job_id} after submission", 'error' );
+			return new \WP_REST_Response(
+				array( 'error' => 'Job created but could not be retrieved' ),
+				500
+			);
+		}
+
+		teknup_ai_mastering()->log( "Job {$job_id} retrieved, formatting for API response...", 'debug' );
+
 		$formatted_job = teknup_ai_mastering()->jobs->format_job_for_api( $job );
+
+		teknup_ai_mastering()->log( "Job {$job_id} formatted successfully, returning 201 response", 'debug' );
 
 		return new \WP_REST_Response(
 			array(
