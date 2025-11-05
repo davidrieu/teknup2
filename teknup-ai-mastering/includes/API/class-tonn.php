@@ -428,20 +428,14 @@ class Tonn {
 	public function handle_webhook( $data ) {
 		teknup_ai_mastering()->log( 'Processing Tonn webhook: ' . json_encode( $data ), 'debug' );
 
-		// Tonn webhook format - support both mixEnhance and mixRevive formats
-		$tonn_task_id = null;
-		if ( isset( $data['mixEnhanceTaskId'] ) ) {
-			$tonn_task_id = $data['mixEnhanceTaskId'];
-		} elseif ( isset( $data['mixReviveTaskId'] ) ) {
-			$tonn_task_id = $data['mixReviveTaskId'];
-		}
+		// Tonn webhook format uses 'mixrevive_task_id' (with underscores) and 'state'
+		$tonn_task_id = isset( $data['mixrevive_task_id'] ) ? $data['mixrevive_task_id'] : null;
+		$state = isset( $data['state'] ) ? $data['state'] : null;
 
-		if ( ! $tonn_task_id || ! isset( $data['status'] ) ) {
+		if ( ! $tonn_task_id || ! $state ) {
 			teknup_ai_mastering()->log( 'Invalid webhook data from Tonn - missing required fields', 'error' );
 			return false;
 		}
-
-		$status = $data['status'];
 
 		// Find job by Tonn task ID
 		global $wpdb;
@@ -462,15 +456,23 @@ class Tonn {
 
 		$job_id = $job['id'];
 
-		teknup_ai_mastering()->log( "Webhook received for job {$job_id}, status: {$status}", 'info' );
+		teknup_ai_mastering()->log( "Webhook received for job {$job_id}, state: {$state}", 'info' );
 
-		// Check status - handle both MIX_REVIVE and MIX_ENHANCE formats
-		if ( $status === 'MIX_REVIVE_COMPLETED' || $status === 'MIX_ENHANCE_COMPLETED' ) {
+		// Check state and handle accordingly
+		// States: MIXREVIVE_TASK_STARTED, MIXREVIVE_TASK_SEPARATION, MIXREVIVE_TASK_MIX_MASTER_ENHANCEMENT,
+		//         MIXREVIVE_TASK_MIX_MASTER_CORRECTION, MIXREVIVE_TASK_COMPLETED, MIXREVIVE_TASK_FAILED
+
+		if ( $state === 'MIXREVIVE_TASK_COMPLETED' || $state === 'COMPLETED' ) {
+			// Task completed - download_url_preview_revived should be available
 			return $this->handle_success( $job_id, $data );
-		} elseif ( $status === 'MIX_REVIVE_FAILED' || $status === 'MIX_ENHANCE_FAILED' || $status === 'ERROR' ) {
+		} elseif ( $state === 'MIXREVIVE_TASK_FAILED' || $state === 'FAILED' || $state === 'ERROR' ) {
 			return $this->handle_failure( $job_id, $data );
+		} elseif ( $state === 'MIXREVIVE_TASK_STARTED' ) {
+			// Update job status to processing
+			teknup_ai_mastering()->jobs->update_status( $job_id, 'processing', 'Task started' );
 		}
 
+		// For intermediate states (SEPARATION, ENHANCEMENT, CORRECTION), just log and continue
 		return true;
 	}
 
@@ -482,20 +484,17 @@ class Tonn {
 	 * @return bool Success status.
 	 */
 	private function handle_success( $job_id, $data ) {
-		// Get revived/enhanced mix download URL - support both formats
+		// Get download URL - Tonn uses 'download_url_preview_revived' (with underscores)
 		$download_url = null;
 
-		if ( isset( $data['mixReviveTaskResults']['revivedMixDownloadURL'] ) ) {
-			$download_url = $data['mixReviveTaskResults']['revivedMixDownloadURL'];
-		} elseif ( isset( $data['mixReviveTaskResults']['enhancedMixDownloadURL'] ) ) {
-			$download_url = $data['mixReviveTaskResults']['enhancedMixDownloadURL'];
-		} elseif ( isset( $data['mixEnhanceTaskResults']['enhancedMixDownloadURL'] ) ) {
-			// Fallback to old format
-			$download_url = $data['mixEnhanceTaskResults']['enhancedMixDownloadURL'];
+		if ( isset( $data['download_url_preview_revived'] ) && ! empty( $data['download_url_preview_revived'] ) ) {
+			$download_url = $data['download_url_preview_revived'];
+		} elseif ( isset( $data['download_url_preview_revived_matched'] ) && ! empty( $data['download_url_preview_revived_matched'] ) ) {
+			$download_url = $data['download_url_preview_revived_matched'];
 		}
 
 		if ( ! $download_url ) {
-			teknup_ai_mastering()->log( "No download URL in webhook for job {$job_id}", 'error' );
+			teknup_ai_mastering()->log( "No download URL in webhook for job {$job_id}. Data: " . json_encode( $data ), 'error' );
 			teknup_ai_mastering()->jobs->update_status( $job_id, 'failed', 'No download URL from Tonn' );
 			return false;
 		}
@@ -504,12 +503,10 @@ class Tonn {
 		$settings = ! empty( $job->settings ) ? json_decode( $job->settings, true ) : array();
 		$job_type = isset( $settings['job_type'] ) ? $settings['job_type'] : 'mastering';
 
-		// Handle stems if they were requested
+		// Handle stems if they were requested (Tonn format with underscores)
 		$stems = null;
-		if ( isset( $data['mixReviveTaskResults']['stemsDownloadURLs'] ) ) {
-			$stems = $data['mixReviveTaskResults']['stemsDownloadURLs'];
-		} elseif ( isset( $data['mixEnhanceTaskResults']['stemsDownloadURLs'] ) ) {
-			$stems = $data['mixEnhanceTaskResults']['stemsDownloadURLs'];
+		if ( isset( $data['stems_download_urls'] ) && ! empty( $data['stems_download_urls'] ) ) {
+			$stems = $data['stems_download_urls'];
 		}
 
 		if ( $job_type === 'stem_separation' && $stems ) {

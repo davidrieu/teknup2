@@ -512,7 +512,9 @@ class REST {
 
 		teknup_ai_mastering()->log( 'Received Tonn webhook: ' . json_encode( $body ), 'info' );
 
-		if ( ! isset( $body['id'] ) || ! isset( $body['status'] ) ) {
+		// Tonn webhook format uses 'state' and 'mixrevive_task_id' (with underscores)
+		if ( ! isset( $body['mixrevive_task_id'] ) || ! isset( $body['state'] ) ) {
+			teknup_ai_mastering()->log( 'Invalid webhook: missing mixrevive_task_id or state', 'error' );
 			return new \WP_REST_Response(
 				array( 'error' => 'Missing required fields' ),
 				400
