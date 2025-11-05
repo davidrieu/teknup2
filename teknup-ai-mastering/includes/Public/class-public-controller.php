@@ -92,6 +92,8 @@ class Public_Controller {
 				'maxFileSize' => teknup_ai_mastering()->get_setting( 'max_file_size', 500 ) * 1024 * 1024,
 				'allowedTypes' => array( 'audio/wav', 'audio/mpeg', 'audio/mp3', 'audio/flac', 'audio/aiff' ),
 				'allowedExtensions' => array( 'wav', 'mp3', 'flac', 'aiff', 'aif' ),
+				'isLoggedIn' => is_user_logged_in(),
+				'siteUrl' => home_url(),
 			)
 		);
 	}
@@ -122,14 +124,7 @@ class Public_Controller {
 	 * @return string Mastering app HTML.
 	 */
 	public function render_mastering_shortcode() {
-		if ( ! is_user_logged_in() ) {
-			return '<div class="teknup-login-message teknup-card">
-				<h3>' . __( 'Please Log In', 'teknup-ai-mastering' ) . '</h3>
-				<p>' . __( 'You need to be logged in to access the Teknup AI Mastering service.', 'teknup-ai-mastering' ) . '</p>
-				<p><a href="' . wp_login_url( get_permalink() ) . '" class="teknup-button">' . __( 'Log In', 'teknup-ai-mastering' ) . '</a></p>
-			</div>';
-		}
-
+		// React handles authentication state display
 		return '<div id="teknup-mastering-app"></div>';
 	}
 

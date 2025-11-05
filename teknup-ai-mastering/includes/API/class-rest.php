@@ -163,6 +163,39 @@ class REST {
 				'permission_callback' => array( $this, 'check_admin_permission' ),
 			)
 		);
+
+		// Auth: Register new user
+		register_rest_route(
+			$this->namespace,
+			'/auth/register',
+			array(
+				'methods' => 'POST',
+				'callback' => array( $this, 'register_user' ),
+				'permission_callback' => '__return_true', // Public endpoint
+			)
+		);
+
+		// Auth: Login user
+		register_rest_route(
+			$this->namespace,
+			'/auth/login',
+			array(
+				'methods' => 'POST',
+				'callback' => array( $this, 'login_user' ),
+				'permission_callback' => '__return_true', // Public endpoint
+			)
+		);
+
+		// Get subscription plans
+		register_rest_route(
+			$this->namespace,
+			'/subscription-plans',
+			array(
+				'methods' => 'GET',
+				'callback' => array( $this, 'get_subscription_plans' ),
+				'permission_callback' => '__return_true', // Public endpoint
+			)
+		);
 	}
 
 	/**
@@ -599,6 +632,173 @@ class REST {
 		$logs = array_slice( $logs, 0, 500 );
 
 		return new \WP_REST_Response( $logs, 200 );
+	}
+
+	/**
+	 * Register new user endpoint
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function register_user( $request ) {
+		$username = sanitize_user( $request->get_param( 'username' ) );
+		$email    = sanitize_email( $request->get_param( 'email' ) );
+		$password = $request->get_param( 'password' );
+
+		// Validation
+		if ( empty( $username ) || empty( $email ) || empty( $password ) ) {
+			return new \WP_REST_Response(
+				array( 'message' => __( 'All fields are required', 'teknup-ai-mastering' ) ),
+				400
+			);
+		}
+
+		if ( ! is_email( $email ) ) {
+			return new \WP_REST_Response(
+				array( 'message' => __( 'Invalid email address', 'teknup-ai-mastering' ) ),
+				400
+			);
+		}
+
+		if ( username_exists( $username ) ) {
+			return new \WP_REST_Response(
+				array( 'message' => __( 'Username already exists', 'teknup-ai-mastering' ) ),
+				400
+			);
+		}
+
+		if ( email_exists( $email ) ) {
+			return new \WP_REST_Response(
+				array( 'message' => __( 'Email already registered', 'teknup-ai-mastering' ) ),
+				400
+			);
+		}
+
+		// Create user
+		$user_id = wp_create_user( $username, $password, $email );
+
+		if ( is_wp_error( $user_id ) ) {
+			return new \WP_REST_Response(
+				array( 'message' => $user_id->get_error_message() ),
+				500
+			);
+		}
+
+		// Log user in automatically
+		wp_set_current_user( $user_id );
+		wp_set_auth_cookie( $user_id, true );
+
+		return new \WP_REST_Response(
+			array(
+				'message' => __( 'Account created successfully', 'teknup-ai-mastering' ),
+				'user_id' => $user_id,
+			),
+			201
+		);
+	}
+
+	/**
+	 * Login user endpoint
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function login_user( $request ) {
+		$username = sanitize_text_field( $request->get_param( 'username' ) );
+		$password = $request->get_param( 'password' );
+
+		// Validation
+		if ( empty( $username ) || empty( $password ) ) {
+			return new \WP_REST_Response(
+				array( 'message' => __( 'Username and password are required', 'teknup-ai-mastering' ) ),
+				400
+			);
+		}
+
+		// Authenticate
+		$user = wp_authenticate( $username, $password );
+
+		if ( is_wp_error( $user ) ) {
+			return new \WP_REST_Response(
+				array( 'message' => __( 'Invalid username or password', 'teknup-ai-mastering' ) ),
+				401
+			);
+		}
+
+		// Set authentication
+		wp_set_current_user( $user->ID );
+		wp_set_auth_cookie( $user->ID, true );
+
+		return new \WP_REST_Response(
+			array(
+				'message' => __( 'Logged in successfully', 'teknup-ai-mastering' ),
+				'user_id' => $user->ID,
+			),
+			200
+		);
+	}
+
+	/**
+	 * Get subscription plans endpoint
+	 *
+	 * @return WP_REST_Response Response object.
+	 */
+	public function get_subscription_plans() {
+		if ( ! class_exists( 'WC_Subscriptions' ) ) {
+			return new \WP_REST_Response(
+				array( 'message' => __( 'WooCommerce Subscriptions is not active', 'teknup-ai-mastering' ) ),
+				500
+			);
+		}
+
+		$product_ids = get_option( 'teknup_subscription_products', array() );
+
+		if ( empty( $product_ids ) ) {
+			return new \WP_REST_Response(
+				array( 'message' => __( 'No subscription plans available', 'teknup-ai-mastering' ) ),
+				404
+			);
+		}
+
+		$plans = array();
+
+		// Plan limits mapping
+		$plan_limits = array(
+			'Free Trial'   => 3,
+			'Starter Plan' => 20,
+			'Pro Plan'     => 'unlimited',
+			'Label Plan'   => 'unlimited',
+		);
+
+		foreach ( $product_ids as $name => $product_id ) {
+			$product = wc_get_product( $product_id );
+
+			if ( ! $product ) {
+				continue;
+			}
+
+			$price = $product->get_price();
+			$period = '';
+
+			if ( is_a( $product, 'WC_Product_Subscription' ) ) {
+				$period = $product->get_meta( '_subscription_period' );
+			}
+
+			$plans[] = array(
+				'id'       => $product_id,
+				'name'     => $name,
+				'price'    => $price,
+				'currency' => get_woocommerce_currency_symbol(),
+				'period'   => $period ?: 'month',
+				'limit'    => isset( $plan_limits[ $name ] ) ? $plan_limits[ $name ] : 'unlimited',
+				'featured' => $name === 'Pro Plan', // Mark Pro Plan as featured
+			);
+		}
+
+		return new \WP_REST_Response(
+			array( 'plans' => $plans ),
+			200
+		);
 	}
 
 	/**

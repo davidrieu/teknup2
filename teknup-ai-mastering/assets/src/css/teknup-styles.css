@@ -498,3 +498,322 @@
 .teknup-fade-in {
 	animation: teknup-fade-in 0.5s ease;
 }
+
+/* Authentication Container */
+.teknup-auth-container {
+	max-width: 600px;
+	margin: 0 auto;
+	padding: var(--teknup-spacing-xl);
+	animation: teknup-fade-in 0.5s ease;
+}
+
+.teknup-auth-header {
+	text-align: center;
+	margin-bottom: var(--teknup-spacing-xl);
+}
+
+.teknup-auth-header h2 {
+	color: var(--teknup-white);
+	font-size: 32px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 2px;
+	margin-bottom: var(--teknup-spacing-sm);
+	background: linear-gradient(135deg, var(--teknup-red) 0%, var(--teknup-red-light) 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+}
+
+.teknup-auth-header p {
+	color: var(--teknup-gray-light);
+	font-size: 14px;
+}
+
+/* Auth Tabs */
+.teknup-auth-tabs {
+	display: flex;
+	gap: var(--teknup-spacing-sm);
+	margin-bottom: var(--teknup-spacing-xl);
+	border-bottom: 2px solid var(--teknup-border);
+	padding-bottom: var(--teknup-spacing-sm);
+}
+
+.teknup-auth-tab {
+	flex: 1;
+	background: transparent;
+	border: none;
+	color: var(--teknup-gray-light);
+	padding: var(--teknup-spacing-md);
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	transition: all 0.3s ease;
+	position: relative;
+}
+
+.teknup-auth-tab:hover {
+	color: var(--teknup-red-light);
+}
+
+.teknup-auth-tab.active {
+	color: var(--teknup-red);
+}
+
+.teknup-auth-tab.active::after {
+	content: '';
+	position: absolute;
+	bottom: -10px;
+	left: 0;
+	right: 0;
+	height: 2px;
+	background: linear-gradient(90deg, var(--teknup-red) 0%, var(--teknup-red-light) 100%);
+	box-shadow: 0 0 10px var(--teknup-red);
+}
+
+/* Auth Content */
+.teknup-auth-content {
+	background: var(--teknup-bg-card);
+	border: 1px solid var(--teknup-border);
+	border-radius: var(--teknup-radius-lg);
+	padding: var(--teknup-spacing-xl);
+	backdrop-filter: blur(10px);
+}
+
+/* Auth Form */
+.teknup-auth-form {
+	animation: teknup-fade-in 0.3s ease;
+}
+
+.teknup-form-group {
+	margin-bottom: var(--teknup-spacing-lg);
+}
+
+.teknup-form-group label {
+	display: block;
+	color: var(--teknup-gray-light);
+	font-weight: 600;
+	margin-bottom: var(--teknup-spacing-sm);
+	text-transform: uppercase;
+	font-size: 12px;
+	letter-spacing: 1px;
+}
+
+.teknup-form-group small {
+	display: block;
+	color: var(--teknup-gray);
+	font-size: 11px;
+	margin-top: var(--teknup-spacing-xs);
+}
+
+.teknup-form-group .teknup-input {
+	width: 100%;
+}
+
+.teknup-button-primary {
+	width: 100%;
+	margin-top: var(--teknup-spacing-md);
+}
+
+.teknup-auth-footer {
+	text-align: center;
+	margin-top: var(--teknup-spacing-lg);
+	color: var(--teknup-gray-light);
+	font-size: 14px;
+}
+
+.teknup-auth-footer a {
+	color: var(--teknup-red);
+	text-decoration: none;
+	font-weight: 600;
+	transition: color 0.3s ease;
+}
+
+.teknup-auth-footer a:hover {
+	color: var(--teknup-red-light);
+}
+
+/* Messages */
+.teknup-message {
+	padding: var(--teknup-spacing-md);
+	border-radius: var(--teknup-radius-md);
+	margin-bottom: var(--teknup-spacing-lg);
+	font-size: 14px;
+	animation: teknup-fade-in 0.3s ease;
+}
+
+.teknup-message-error {
+	background: rgba(244, 67, 54, 0.2);
+	color: #F44336;
+	border: 1px solid rgba(244, 67, 54, 0.5);
+}
+
+.teknup-message-success {
+	background: rgba(76, 175, 80, 0.2);
+	color: #4CAF50;
+	border: 1px solid rgba(76, 175, 80, 0.5);
+}
+
+.teknup-message-warning {
+	background: rgba(255, 193, 7, 0.2);
+	color: #FFC107;
+	border: 1px solid rgba(255, 193, 7, 0.5);
+}
+
+/* Subscription Plans */
+.teknup-plans-wrapper {
+	animation: teknup-fade-in 0.3s ease;
+}
+
+.teknup-plans-intro {
+	text-align: center;
+	color: var(--teknup-gray-light);
+	margin-bottom: var(--teknup-spacing-xl);
+	font-size: 14px;
+}
+
+.teknup-subscription-plans {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: var(--teknup-spacing-lg);
+}
+
+.teknup-plan-card {
+	background: var(--teknup-bg-card);
+	border: 1px solid var(--teknup-border);
+	border-radius: var(--teknup-radius-lg);
+	padding: var(--teknup-spacing-xl);
+	backdrop-filter: blur(10px);
+	transition: all 0.3s ease;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+}
+
+.teknup-plan-card:hover {
+	border-color: var(--teknup-red);
+	box-shadow: var(--teknup-shadow-glow);
+	transform: translateY(-5px);
+}
+
+.teknup-plan-card.featured {
+	border-color: var(--teknup-red);
+	box-shadow: 0 0 30px rgba(220, 20, 60, 0.3);
+}
+
+.teknup-plan-badge {
+	position: absolute;
+	top: -12px;
+	right: var(--teknup-spacing-lg);
+	background: linear-gradient(135deg, var(--teknup-red) 0%, var(--teknup-red-dark) 100%);
+	color: var(--teknup-white);
+	padding: var(--teknup-spacing-xs) var(--teknup-spacing-md);
+	border-radius: var(--teknup-radius-sm);
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	box-shadow: var(--teknup-shadow-glow);
+}
+
+.teknup-plan-header {
+	text-align: center;
+	margin-bottom: var(--teknup-spacing-lg);
+	padding-bottom: var(--teknup-spacing-lg);
+	border-bottom: 1px solid var(--teknup-border);
+}
+
+.teknup-plan-header h3 {
+	color: var(--teknup-white);
+	font-size: 20px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	margin-bottom: var(--teknup-spacing-md);
+}
+
+.teknup-plan-price {
+	display: flex;
+	align-items: baseline;
+	justify-content: center;
+	gap: 4px;
+}
+
+.teknup-plan-price .price-currency {
+	color: var(--teknup-gray-light);
+	font-size: 18px;
+	font-weight: 600;
+}
+
+.teknup-plan-price .price-amount {
+	color: var(--teknup-red);
+	font-size: 36px;
+	font-weight: 700;
+}
+
+.teknup-plan-price .price-period {
+	color: var(--teknup-gray);
+	font-size: 14px;
+}
+
+.teknup-plan-features {
+	flex: 1;
+	margin-bottom: var(--teknup-spacing-xl);
+}
+
+.teknup-plan-features ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.teknup-plan-features li {
+	color: var(--teknup-gray-light);
+	padding: var(--teknup-spacing-sm) 0;
+	display: flex;
+	align-items: center;
+	gap: var(--teknup-spacing-sm);
+	font-size: 14px;
+}
+
+.teknup-plan-features .feature-icon {
+	font-size: 18px;
+	min-width: 24px;
+}
+
+.teknup-plan-card .teknup-button {
+	width: 100%;
+	margin-top: auto;
+}
+
+/* Plans Loading */
+.teknup-plans-loading {
+	text-align: center;
+	padding: var(--teknup-spacing-xxl);
+	color: var(--teknup-gray-light);
+}
+
+/* Responsive - Auth & Plans */
+@media (max-width: 768px) {
+	.teknup-auth-container {
+		padding: var(--teknup-spacing-md);
+	}
+
+	.teknup-auth-header h2 {
+		font-size: 24px;
+	}
+
+	.teknup-auth-tabs {
+		flex-direction: column;
+	}
+
+	.teknup-auth-tab {
+		text-align: center;
+	}
+
+	.teknup-subscription-plans {
+		grid-template-columns: 1fr;
+	}
+}
