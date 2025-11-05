@@ -221,12 +221,13 @@ class Tonn {
 				'musicalStyle' => isset( $settings['musical_style'] ) ? strtoupper( $settings['musical_style'] ) : 'POP',
 				'isMaster' => isset( $settings['is_master'] ) ? (bool) $settings['is_master'] : false,
 				'fixClippingIssues' => isset( $settings['fix_clipping'] ) ? (bool) $settings['fix_clipping'] : true,
-				'fixLoudnessIssues' => isset( $settings['fix_loudness'] ) ? (bool) $settings['fix_loudness'] : true,
+				'fixDRCIssues' => isset( $settings['fix_drc'] ) ? (bool) $settings['fix_drc'] : true,
 				'fixStereoWidthIssues' => isset( $settings['fix_stereo_width'] ) ? (bool) $settings['fix_stereo_width'] : true,
 				'fixTonalProfileIssues' => isset( $settings['fix_tonal_profile'] ) ? (bool) $settings['fix_tonal_profile'] : true,
+				'fixLoudnessIssues' => isset( $settings['fix_loudness'] ) ? (bool) $settings['fix_loudness'] : true,
 				'applyMastering' => isset( $settings['apply_mastering'] ) ? (bool) $settings['apply_mastering'] : true,
-				'stemProcessing' => false, // No stems for basic mastering
 				'loudnessPreference' => isset( $settings['loudness_preference'] ) ? $settings['loudness_preference'] : 'STREAMING_LOUDNESS',
+				'stemProcessing' => false, // No stems for basic mastering
 				'webhookURL' => $webhook_url,
 			),
 		);
@@ -254,13 +255,14 @@ class Tonn {
 				'musicalStyle' => isset( $settings['musical_style'] ) ? strtoupper( $settings['musical_style'] ) : 'POP',
 				'isMaster' => isset( $settings['is_master'] ) ? (bool) $settings['is_master'] : false,
 				'fixClippingIssues' => isset( $settings['fix_clipping'] ) ? (bool) $settings['fix_clipping'] : true,
-				'fixLoudnessIssues' => isset( $settings['fix_loudness'] ) ? (bool) $settings['fix_loudness'] : true,
+				'fixDRCIssues' => isset( $settings['fix_drc'] ) ? (bool) $settings['fix_drc'] : true,
 				'fixStereoWidthIssues' => isset( $settings['fix_stereo_width'] ) ? (bool) $settings['fix_stereo_width'] : true,
 				'fixTonalProfileIssues' => isset( $settings['fix_tonal_profile'] ) ? (bool) $settings['fix_tonal_profile'] : true,
+				'fixLoudnessIssues' => isset( $settings['fix_loudness'] ) ? (bool) $settings['fix_loudness'] : true,
 				'applyMastering' => isset( $settings['apply_mastering'] ) ? (bool) $settings['apply_mastering'] : true,
+				'loudnessPreference' => isset( $settings['loudness_preference'] ) ? $settings['loudness_preference'] : 'STREAMING_LOUDNESS',
 				'stemProcessing' => true, // Enable stem separation
 				'getProcessedStems' => true, // Get processed stems
-				'loudnessPreference' => isset( $settings['loudness_preference'] ) ? $settings['loudness_preference'] : 'STREAMING_LOUDNESS',
 				'webhookURL' => $webhook_url,
 			),
 		);
@@ -496,10 +498,15 @@ class Tonn {
 	 * @return bool Success status.
 	 */
 	private function handle_success( $job_id, $data ) {
-		// Get download URL - Tonn uses 'download_url_preview_revived' (with underscores)
+		// Get download URL - check for multiple possible field names:
+		// - 'download_url_revived' for full /mixenhance jobs
+		// - 'download_url_preview_revived' for preview jobs
+		// - 'download_url_preview_revived_matched' for matched loudness
 		$download_url = null;
 
-		if ( isset( $data['download_url_preview_revived'] ) && ! empty( $data['download_url_preview_revived'] ) ) {
+		if ( isset( $data['download_url_revived'] ) && ! empty( $data['download_url_revived'] ) ) {
+			$download_url = $data['download_url_revived'];
+		} elseif ( isset( $data['download_url_preview_revived'] ) && ! empty( $data['download_url_preview_revived'] ) ) {
 			$download_url = $data['download_url_preview_revived'];
 		} elseif ( isset( $data['download_url_preview_revived_matched'] ) && ! empty( $data['download_url_preview_revived_matched'] ) ) {
 			$download_url = $data['download_url_preview_revived_matched'];
