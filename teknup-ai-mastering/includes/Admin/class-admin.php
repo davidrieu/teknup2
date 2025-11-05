@@ -41,6 +41,7 @@ class Admin {
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
+		add_action( 'wp_ajax_teknup_clear_logs', array( $this, 'clear_logs' ) );
 	}
 
 	/**
@@ -190,5 +191,27 @@ class Admin {
 	 */
 	public function render_logs_page() {
 		include TEKNUP_PLUGIN_DIR . 'templates/admin/logs.php';
+	}
+
+	/**
+	 * Clear logs via AJAX
+	 */
+	public function clear_logs() {
+		// Verify nonce
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'teknup_clear_logs' ) ) {
+			wp_send_json_error( array( 'message' => 'Invalid nonce' ) );
+		}
+
+		// Check user capability
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => 'Insufficient permissions' ) );
+		}
+
+		// Clear logs
+		delete_option( 'teknup_logs' );
+
+		teknup_ai_mastering()->log( 'Logs cleared by admin', 'info' );
+
+		wp_send_json_success( array( 'message' => 'Logs cleared successfully' ) );
 	}
 }

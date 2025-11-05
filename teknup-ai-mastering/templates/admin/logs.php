@@ -25,6 +25,7 @@ $logs = array_reverse( $logs ); // Newest first
 			<option value="error"><?php esc_html_e( 'Error', 'teknup-ai-mastering' ); ?></option>
 		</select>
 		<button type="button" class="button" onclick="location.reload();"><?php esc_html_e( 'Refresh', 'teknup-ai-mastering' ); ?></button>
+		<button type="button" class="button button-secondary" id="teknup-clear-logs"><?php esc_html_e( 'Clear Logs', 'teknup-ai-mastering' ); ?></button>
 	</div>
 
 	<div class="teknup-logs-container">
@@ -70,6 +71,36 @@ jQuery(document).ready(function($) {
 			$('.teknup-log-entry').hide();
 			$('.teknup-log-entry[data-level="' + level + '"]').show();
 		}
+	});
+
+	$('#teknup-clear-logs').on('click', function() {
+		if (!confirm('<?php esc_html_e( 'Are you sure you want to clear all logs? This cannot be undone.', 'teknup-ai-mastering' ); ?>')) {
+			return;
+		}
+
+		var button = $(this);
+		button.prop('disabled', true).text('<?php esc_html_e( 'Clearing...', 'teknup-ai-mastering' ); ?>');
+
+		$.ajax({
+			url: ajaxurl,
+			type: 'POST',
+			data: {
+				action: 'teknup_clear_logs',
+				nonce: '<?php echo esc_js( wp_create_nonce( 'teknup_clear_logs' ) ); ?>'
+			},
+			success: function(response) {
+				if (response.success) {
+					location.reload();
+				} else {
+					alert('<?php esc_html_e( 'Failed to clear logs.', 'teknup-ai-mastering' ); ?>');
+					button.prop('disabled', false).text('<?php esc_html_e( 'Clear Logs', 'teknup-ai-mastering' ); ?>');
+				}
+			},
+			error: function() {
+				alert('<?php esc_html_e( 'Failed to clear logs.', 'teknup-ai-mastering' ); ?>');
+				button.prop('disabled', false).text('<?php esc_html_e( 'Clear Logs', 'teknup-ai-mastering' ); ?>');
+			}
+		});
 	});
 });
 </script>

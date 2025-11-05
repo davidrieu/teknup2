@@ -433,15 +433,20 @@ class Tonn {
 	 */
 	public function handle_webhook( $data ) {
 		teknup_ai_mastering()->log( 'Processing Tonn webhook: ' . json_encode( $data ), 'debug' );
+		teknup_ai_mastering()->log( '=== WEBHOOK v2.1.2 ACTIVE - handle_webhook() called ===', 'info' );
 
 		// Tonn webhook format uses 'mixrevive_task_id' (with underscores) and 'state'
 		$tonn_task_id = isset( $data['mixrevive_task_id'] ) ? $data['mixrevive_task_id'] : null;
 		$state = isset( $data['state'] ) ? $data['state'] : null;
 
+		teknup_ai_mastering()->log( "Task ID: {$tonn_task_id} | State: {$state}", 'info' );
+
 		if ( ! $tonn_task_id || ! $state ) {
 			teknup_ai_mastering()->log( 'Invalid webhook data from Tonn - missing required fields', 'error' );
 			return false;
 		}
+
+		teknup_ai_mastering()->log( 'Validation passed, searching database for job...', 'debug' );
 
 		// Find job by Tonn task ID
 		global $wpdb;
