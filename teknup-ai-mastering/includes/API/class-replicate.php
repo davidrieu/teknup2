@@ -43,7 +43,7 @@ class Replicate {
 	 *
 	 * @var string
 	 */
-	private $mastering_model = 'resemble-ai/resemble-enhance';
+	private $mastering_model = 'nateraw/audio-super-resolution';
 
 	/**
 	 * Stem separation model
@@ -151,16 +151,17 @@ class Replicate {
 			);
 		}
 
-		// Prepare resemble-enhance parameters
+		// Prepare audio super-resolution parameters
 		$input = array(
-			'input_audio' => $input_url,
-			'solver' => isset( $settings['solver'] ) ? $settings['solver'] : 'Midpoint',
-			'nfe' => isset( $settings['nfe'] ) ? (int) $settings['nfe'] : 64,
-			'tau' => isset( $settings['tau'] ) ? (float) $settings['tau'] : 0.5,
-			'denoising' => isset( $settings['denoising'] ) ? (bool) $settings['denoising'] : true,
-			'chunk_seconds' => isset( $settings['chunk_seconds'] ) ? (int) $settings['chunk_seconds'] : 10,
-			'chunks_overlap' => isset( $settings['chunks_overlap'] ) ? (int) $settings['chunks_overlap'] : 1,
+			'input_file' => $input_url,
+			'ddim_steps' => isset( $settings['ddim_steps'] ) ? (int) $settings['ddim_steps'] : 50,
+			'guidance_scale' => isset( $settings['guidance_scale'] ) ? (float) $settings['guidance_scale'] : 3.5,
 		);
+
+		// Optional seed
+		if ( isset( $settings['seed'] ) && ! empty( $settings['seed'] ) ) {
+			$input['seed'] = (int) $settings['seed'];
+		}
 
 		$webhook_url = rest_url( 'teknup/v1/replicate/callback' );
 
