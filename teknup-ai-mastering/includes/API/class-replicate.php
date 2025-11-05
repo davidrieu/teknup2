@@ -154,14 +154,19 @@ class Replicate {
 			$input['seed'] = (int) $settings['seed'];
 		}
 
+		// Use model name directly - Replicate will use the latest version
+		$webhook_url = rest_url( 'teknup/v1/replicate/callback' );
+
+		teknup_ai_mastering()->log( "Webhook URL: {$webhook_url}", 'debug' );
+
 		$body = array(
-			'version' => $this->get_model_version( $this->mastering_model ),
 			'input' => $input,
-			'webhook' => rest_url( 'teknup/v1/replicate/callback' ),
+			'webhook' => $webhook_url,
 			'webhook_events_filter' => array( 'completed', 'failed' ),
 		);
 
-		return $this->make_request( 'POST', '/predictions', $body );
+		// Make request to model-specific endpoint
+		return $this->make_request( 'POST', "/models/{$this->mastering_model}/predictions", $body );
 	}
 
 	/**
@@ -195,14 +200,17 @@ class Replicate {
 			$input['mp3_bitrate'] = (int) $settings['mp3_bitrate'];
 		}
 
+		// Use model name directly - Replicate will use the latest version
+		$webhook_url = rest_url( 'teknup/v1/replicate/callback' );
+
 		$body = array(
-			'version' => $this->get_model_version( $this->stem_model ),
 			'input' => $input,
-			'webhook' => rest_url( 'teknup/v1/replicate/callback' ),
+			'webhook' => $webhook_url,
 			'webhook_events_filter' => array( 'completed', 'failed' ),
 		);
 
-		return $this->make_request( 'POST', '/predictions', $body );
+		// Make request to model-specific endpoint
+		return $this->make_request( 'POST', "/models/{$this->stem_model}/predictions", $body );
 	}
 
 	/**
@@ -277,6 +285,11 @@ class Replicate {
 
 		if ( $status_code < 200 || $status_code >= 300 ) {
 			$error_message = isset( $data['detail'] ) ? $data['detail'] : 'Replicate API error';
+
+			teknup_ai_mastering()->log(
+				"Replicate API error {$status_code}: {$error_message} | Response: " . $body_data,
+				'error'
+			);
 
 			// Retry on server errors
 			if ( $status_code >= 500 && $retry_count < $this->max_retries ) {

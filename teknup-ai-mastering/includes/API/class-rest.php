@@ -337,6 +337,11 @@ class REST {
 		$result = $replicate->submit_job( $job_id );
 
 		if ( is_wp_error( $result ) ) {
+			teknup_ai_mastering()->log(
+				'Failed to submit job to Replicate: ' . $result->get_error_message() . ' | Code: ' . $result->get_error_code(),
+				'error'
+			);
+
 			return new \WP_REST_Response(
 				array(
 					'error' => $result->get_error_message(),
