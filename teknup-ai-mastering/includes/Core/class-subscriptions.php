@@ -1,0 +1,329 @@
+<?php
+/**
+ * Subscriptions class - Handles WooCommerce subscription integration
+ *
+ * @package Teknup\Core
+ */
+
+namespace Teknup\Core;
+
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Subscriptions class
+ */
+class Subscriptions {
+
+	/**
+	 * Plan limits
+	 *
+	 * @var array
+	 */
+	private $plan_limits = array(
+		'free_trial' => array(
+			'name' => 'Free Trial',
+			'monthly_limit' => 3,
+			'features' => array( 'basic' ),
+		),
+		'starter' => array(
+			'name' => 'Starter',
+			'monthly_limit' => 20,
+			'features' => array( 'basic', 'advanced_controls', 'presets', 'unlimited_revisions' ),
+		),
+		'pro' => array(
+			'name' => 'Pro',
+			'monthly_limit' => -1, // Unlimited
+			'features' => array( 'basic', 'advanced_controls', 'presets', 'unlimited_revisions', 'priority_queue', 'target_lufs', 'batch_processing', 'reference_matching' ),
+		),
+		'label' => array(
+			'name' => 'Label',
+			'monthly_limit' => -1, // Unlimited
+			'features' => array( 'basic', 'advanced_controls', 'presets', 'unlimited_revisions', 'priority_queue', 'target_lufs', 'batch_processing', 'reference_matching', 'api_access', 'white_label' ),
+		),
+	);
+
+	/**
+	 * Constructor
+	 */
+	public function __construct() {
+		// Hook into subscription renewal to reset counters
+		add_action( 'woocommerce_subscription_renewal_payment_complete', array( $this, 'reset_monthly_counter' ) );
+		add_action( 'woocommerce_scheduled_subscription_payment', array( $this, 'reset_monthly_counter' ) );
+	}
+
+	/**
+	 * Get user's active subscription
+	 *
+	 * @param int $user_id User ID.
+	 * @return object|null Subscription object or null.
+	 */
+	public function get_user_subscription( $user_id = null ) {
+		if ( ! $user_id ) {
+			$user_id = get_current_user_id();
+		}
+
+		if ( ! function_exists( 'wcs_get_users_subscriptions' ) ) {
+			return null;
+		}
+
+		$subscriptions = wcs_get_users_subscriptions( $user_id );
+
+		foreach ( $subscriptions as $subscription ) {
+			if ( $subscription->has_status( 'active' ) ) {
+				return $subscription;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get user's plan
+	 *
+	 * @param int $user_id User ID.
+	 * @return string Plan slug.
+	 */
+	public function get_user_plan( $user_id = null ) {
+		if ( ! $user_id ) {
+			$user_id = get_current_user_id();
+		}
+
+		// Check for active subscription
+		$subscription = $this->get_user_subscription( $user_id );
+
+		if ( $subscription ) {
+			// Get plan from subscription product meta
+			foreach ( $subscription->get_items() as $item ) {
+				$product_id = $item->get_product_id();
+				$plan_slug = get_post_meta( $product_id, '_teknup_plan_slug', true );
+
+				if ( $plan_slug && isset( $this->plan_limits[ $plan_slug ] ) ) {
+					return $plan_slug;
+				}
+			}
+
+			// Fallback: try to detect from product name
+			foreach ( $subscription->get_items() as $item ) {
+				$product_name = strtolower( $item->get_name() );
+
+				if ( strpos( $product_name, 'label' ) !== false ) {
+					return 'label';
+				} elseif ( strpos( $product_name, 'pro' ) !== false ) {
+					return 'pro';
+				} elseif ( strpos( $product_name, 'starter' ) !== false ) {
+					return 'starter';
+				}
+			}
+		}
+
+		// Check for free trial
+		$trial_used = get_user_meta( $user_id, 'teknup_trial_used', true );
+		$trial_count = get_user_meta( $user_id, 'teknup_trial_count', true );
+
+		if ( ! $trial_used || (int) $trial_count < 3 ) {
+			return 'free_trial';
+		}
+
+		return 'none';
+	}
+
+	/**
+	 * Get plan limits
+	 *
+	 * @param string $plan Plan slug.
+	 * @return array|null Plan limits or null.
+	 */
+	public function get_plan_limits( $plan ) {
+		return isset( $this->plan_limits[ $plan ] ) ? $this->plan_limits[ $plan ] : null;
+	}
+
+	/**
+	 * Get user's monthly limit
+	 *
+	 * @param int $user_id User ID.
+	 * @return int Monthly limit (-1 for unlimited).
+	 */
+	public function get_user_monthly_limit( $user_id = null ) {
+		if ( ! $user_id ) {
+			$user_id = get_current_user_id();
+		}
+
+		$plan = $this->get_user_plan( $user_id );
+		$limits = $this->get_plan_limits( $plan );
+
+		return $limits ? $limits['monthly_limit'] : 0;
+	}
+
+	/**
+	 * Get user's monthly usage
+	 *
+	 * @param int $user_id User ID.
+	 * @return int Monthly usage count.
+	 */
+	public function get_user_monthly_usage( $user_id = null ) {
+		if ( ! $user_id ) {
+			$user_id = get_current_user_id();
+		}
+
+		$plan = $this->get_user_plan( $user_id );
+
+		// For free trial, use user meta
+		if ( $plan === 'free_trial' ) {
+			$trial_count = get_user_meta( $user_id, 'teknup_trial_count', true );
+			return (int) $trial_count;
+		}
+
+		// For paid plans, count completed jobs this month
+		return teknup_ai_mastering()->jobs->get_user_monthly_jobs_count( $user_id );
+	}
+
+	/**
+	 * Check if user can upload
+	 *
+	 * @param int $user_id User ID.
+	 * @return bool|WP_Error True if can upload or WP_Error.
+	 */
+	public function can_user_upload( $user_id = null ) {
+		if ( ! $user_id ) {
+			$user_id = get_current_user_id();
+		}
+
+		if ( ! $user_id ) {
+			return new \WP_Error( 'not_logged_in', __( 'You must be logged in to upload files.', 'teknup-ai-mastering' ) );
+		}
+
+		$plan = $this->get_user_plan( $user_id );
+
+		if ( $plan === 'none' ) {
+			return new \WP_Error(
+				'no_subscription',
+				__( 'You need an active subscription to upload files. Please subscribe to continue.', 'teknup-ai-mastering' )
+			);
+		}
+
+		$limit = $this->get_user_monthly_limit( $user_id );
+		$usage = $this->get_user_monthly_usage( $user_id );
+
+		// Unlimited
+		if ( $limit === -1 ) {
+			return true;
+		}
+
+		// Check limit
+		if ( $usage >= $limit ) {
+			return new \WP_Error(
+				'limit_reached',
+				sprintf(
+					__( 'You have reached your monthly limit of %d masters. Please upgrade your plan to continue.', 'teknup-ai-mastering' ),
+					$limit
+				)
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Increment usage counter
+	 *
+	 * @param int $user_id User ID.
+	 * @return bool True on success.
+	 */
+	public function increment_usage( $user_id = null ) {
+		if ( ! $user_id ) {
+			$user_id = get_current_user_id();
+		}
+
+		$plan = $this->get_user_plan( $user_id );
+
+		// For free trial, increment user meta
+		if ( $plan === 'free_trial' ) {
+			$trial_count = get_user_meta( $user_id, 'teknup_trial_count', true );
+			$new_count = (int) $trial_count + 1;
+			update_user_meta( $user_id, 'teknup_trial_count', $new_count );
+
+			if ( $new_count >= 3 ) {
+				update_user_meta( $user_id, 'teknup_trial_used', true );
+			}
+		}
+
+		// For paid plans, usage is counted from completed jobs automatically
+
+		return true;
+	}
+
+	/**
+	 * Reset monthly counter on subscription renewal
+	 *
+	 * @param object $subscription Subscription object.
+	 */
+	public function reset_monthly_counter( $subscription ) {
+		$user_id = $subscription->get_user_id();
+
+		// Reset trial counter if applicable
+		update_user_meta( $user_id, 'teknup_trial_count', 0 );
+		update_user_meta( $user_id, 'teknup_trial_used', false );
+
+		teknup_ai_mastering()->log( "Monthly counter reset for user {$user_id}", 'info' );
+
+		/**
+		 * Fires after monthly counter is reset
+		 *
+		 * @param int    $user_id User ID.
+		 * @param object $subscription Subscription object.
+		 */
+		do_action( 'teknup_monthly_counter_reset', $user_id, $subscription );
+	}
+
+	/**
+	 * Check if user has feature
+	 *
+	 * @param string $feature Feature slug.
+	 * @param int    $user_id User ID.
+	 * @return bool True if user has feature.
+	 */
+	public function user_has_feature( $feature, $user_id = null ) {
+		if ( ! $user_id ) {
+			$user_id = get_current_user_id();
+		}
+
+		$plan = $this->get_user_plan( $user_id );
+		$limits = $this->get_plan_limits( $plan );
+
+		if ( ! $limits ) {
+			return false;
+		}
+
+		return in_array( $feature, $limits['features'], true );
+	}
+
+	/**
+	 * Get user's remaining quota
+	 *
+	 * @param int $user_id User ID.
+	 * @return array Quota information.
+	 */
+	public function get_user_quota( $user_id = null ) {
+		if ( ! $user_id ) {
+			$user_id = get_current_user_id();
+		}
+
+		$plan = $this->get_user_plan( $user_id );
+		$limit = $this->get_user_monthly_limit( $user_id );
+		$usage = $this->get_user_monthly_usage( $user_id );
+		$limits = $this->get_plan_limits( $plan );
+
+		return array(
+			'plan' => $plan,
+			'plan_name' => $limits ? $limits['name'] : 'None',
+			'limit' => $limit,
+			'usage' => $usage,
+			'remaining' => $limit === -1 ? -1 : max( 0, $limit - $usage ),
+			'unlimited' => $limit === -1,
+			'percentage' => $limit === -1 ? 0 : min( 100, round( ( $usage / $limit ) * 100, 2 ) ),
+		);
+	}
+}
