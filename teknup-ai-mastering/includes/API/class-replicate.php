@@ -153,7 +153,7 @@ class Replicate {
 
 		// Prepare resemble-enhance parameters
 		$input = array(
-			'audio' => $input_url,
+			'input_audio' => $input_url,
 			'solver' => isset( $settings['solver'] ) ? $settings['solver'] : 'Midpoint',
 			'nfe' => isset( $settings['nfe'] ) ? (int) $settings['nfe'] : 64,
 			'tau' => isset( $settings['tau'] ) ? (float) $settings['tau'] : 0.5,
