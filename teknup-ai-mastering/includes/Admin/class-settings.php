@@ -7,8 +7,6 @@
 
 namespace Teknup\Admin;
 
-use Teknup\API\Dolby;
-
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
