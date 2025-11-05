@@ -96,10 +96,16 @@ class Tonn {
 			return $response;
 		}
 
-		// Store Tonn task ID
-		$tonn_task_id = isset( $response['mixReviveTaskId'] ) ? $response['mixReviveTaskId'] : null;
+		// Store Tonn task ID - support both formats
+		$tonn_task_id = null;
+		if ( isset( $response['mixEnhanceTaskId'] ) ) {
+			$tonn_task_id = $response['mixEnhanceTaskId'];
+		} elseif ( isset( $response['mixReviveTaskId'] ) ) {
+			$tonn_task_id = $response['mixReviveTaskId'];
+		}
 
 		if ( ! $tonn_task_id ) {
+			teknup_ai_mastering()->log( 'No task ID in response: ' . json_encode( $response ), 'error' );
 			return new \WP_Error( 'no_task_id', __( 'No task ID returned from Tonn.', 'teknup-ai-mastering' ) );
 		}
 
@@ -422,13 +428,19 @@ class Tonn {
 	public function handle_webhook( $data ) {
 		teknup_ai_mastering()->log( 'Processing Tonn webhook: ' . json_encode( $data ), 'debug' );
 
-		// Tonn Mix Revive webhook format
-		if ( ! isset( $data['mixReviveTaskId'] ) || ! isset( $data['status'] ) ) {
+		// Tonn webhook format - support both mixEnhance and mixRevive formats
+		$tonn_task_id = null;
+		if ( isset( $data['mixEnhanceTaskId'] ) ) {
+			$tonn_task_id = $data['mixEnhanceTaskId'];
+		} elseif ( isset( $data['mixReviveTaskId'] ) ) {
+			$tonn_task_id = $data['mixReviveTaskId'];
+		}
+
+		if ( ! $tonn_task_id || ! isset( $data['status'] ) ) {
 			teknup_ai_mastering()->log( 'Invalid webhook data from Tonn - missing required fields', 'error' );
 			return false;
 		}
 
-		$tonn_task_id = $data['mixReviveTaskId'];
 		$status = $data['status'];
 
 		// Find job by Tonn task ID
