@@ -140,7 +140,7 @@ class Storage {
 	}
 
 	/**
-	 * Generate temporary public URL for Dolby to access the file
+	 * Generate temporary public URL for Replicate to access the file
 	 *
 	 * @param int $job_id Job ID.
 	 * @return string|WP_Error Public URL or WP_Error on failure.
@@ -205,20 +205,27 @@ class Storage {
 	 * @param string $type File type.
 	 */
 	public function handle_download( $token, $type ) {
-		// Get transient data
-		$data = get_transient( 'teknup_download_token_' . $token );
+		// Try temporary token first (for Replicate API access)
+		$data = get_transient( 'teknup_temp_token_' . $token );
+		$is_temp = true;
+
+		// If not found, try download token (for user downloads)
+		if ( ! $data ) {
+			$data = get_transient( 'teknup_download_token_' . $token );
+			$is_temp = false;
+		}
 
 		if ( ! $data ) {
 			wp_die( __( 'Invalid or expired download link.', 'teknup-ai-mastering' ) );
 		}
 
-		// Check if user matches (for user downloads)
-		if ( isset( $data['user_id'] ) && $data['user_id'] !== get_current_user_id() && ! current_user_can( 'manage_options' ) ) {
+		// Check if user matches (for user downloads only, not temp URLs)
+		if ( ! $is_temp && isset( $data['user_id'] ) && $data['user_id'] !== get_current_user_id() && ! current_user_can( 'manage_options' ) ) {
 			wp_die( __( 'You do not have permission to download this file.', 'teknup-ai-mastering' ) );
 		}
 
-		// Get job
-		$job_id = isset( $data['job_id'] ) ? $data['job_id'] : $data;
+		// Get job ID (temp tokens store job_id directly, download tokens store array)
+		$job_id = $is_temp ? $data : ( isset( $data['job_id'] ) ? $data['job_id'] : $data );
 		$job = teknup_ai_mastering()->jobs->get_job( $job_id );
 
 		if ( ! $job ) {
@@ -316,7 +323,7 @@ class Storage {
 		if ( wp_remote_retrieve_response_code( $response ) !== 200 ) {
 			return new \WP_Error(
 				'download_failed',
-				__( 'Failed to download mastered file from Dolby.', 'teknup-ai-mastering' )
+				__( 'Failed to download mastered file from Replicate.', 'teknup-ai-mastering' )
 			);
 		}
 
