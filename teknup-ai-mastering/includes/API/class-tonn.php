@@ -222,7 +222,7 @@ class Tonn {
 			),
 		);
 
-		return $this->make_request( 'POST', '/mixrevive', $body );
+		return $this->make_request( 'POST', '/mixenhance', $body );
 	}
 
 	/**
@@ -256,7 +256,7 @@ class Tonn {
 			),
 		);
 
-		return $this->make_request( 'POST', '/mixrevive', $body );
+		return $this->make_request( 'POST', '/mixenhance', $body );
 	}
 
 	/**
@@ -266,10 +266,10 @@ class Tonn {
 	 * @return array|WP_Error Status data or error.
 	 */
 	public function check_job_status( $tonn_task_id ) {
-		// Retrieve mix revive results
+		// Retrieve mix enhance results
 		return $this->make_request(
 			'POST',
-			'/retrievemixrevive',
+			'/retrievemixenhance',
 			array(
 				'mixReviveData' => array(
 					'mixReviveTaskId' => $tonn_task_id,
