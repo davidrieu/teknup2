@@ -25,6 +25,7 @@ class Settings {
 	public function __construct() {
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'wp_ajax_teknup_test_api_connection', array( $this, 'test_api_connection' ) );
+		add_action( 'wp_ajax_teknup_create_products', array( $this, 'create_products' ) );
 	}
 
 	/**
@@ -53,6 +54,22 @@ class Settings {
 			array( $this, 'render_api_key_field' ),
 			'teknup_settings',
 			'teknup_dolby_section'
+		);
+
+		// WooCommerce section
+		add_settings_section(
+			'teknup_woocommerce_section',
+			__( 'WooCommerce Products', 'teknup-ai-mastering' ),
+			array( $this, 'render_woocommerce_section' ),
+			'teknup_settings'
+		);
+
+		add_settings_field(
+			'woocommerce_products',
+			__( 'Subscription Products', 'teknup-ai-mastering' ),
+			array( $this, 'render_woocommerce_products_field' ),
+			'teknup_settings',
+			'teknup_woocommerce_section'
 		);
 
 		// Advanced settings section
@@ -155,10 +172,98 @@ class Settings {
 	}
 
 	/**
+	 * Render WooCommerce section description
+	 */
+	public function render_woocommerce_section() {
+		echo '<p>' . esc_html__( 'Manage WooCommerce subscription products for Teknup AI Mastering plans.', 'teknup-ai-mastering' ) . '</p>';
+	}
+
+	/**
 	 * Render advanced section description
 	 */
 	public function render_advanced_section() {
 		echo '<p>' . esc_html__( 'Advanced configuration options for the mastering service.', 'teknup-ai-mastering' ) . '</p>';
+	}
+
+	/**
+	 * Render WooCommerce products field
+	 */
+	public function render_woocommerce_products_field() {
+		$existing_products = get_option( 'teknup_subscription_products', array() );
+		$products_data = array(
+			'free_trial' => array( 'name' => 'Teknup Free Trial', 'price' => '0€' ),
+			'starter' => array( 'name' => 'Teknup Starter', 'price' => '19$' ),
+			'pro' => array( 'name' => 'Teknup Pro', 'price' => '39$' ),
+			'label' => array( 'name' => 'Teknup Label', 'price' => '99$' ),
+		);
+		?>
+		<div id="teknup-products-status">
+			<?php if ( ! class_exists( 'WC_Subscriptions' ) ) : ?>
+				<div class="notice notice-warning inline">
+					<p>
+						<strong><?php esc_html_e( 'WooCommerce Subscriptions Required', 'teknup-ai-mastering' ); ?></strong><br>
+						<?php esc_html_e( 'Please install and activate WooCommerce Subscriptions to create subscription products.', 'teknup-ai-mastering' ); ?>
+					</p>
+				</div>
+			<?php else : ?>
+				<?php if ( empty( $existing_products ) ) : ?>
+					<div class="notice notice-info inline">
+						<p>
+							<strong><?php esc_html_e( 'Products Not Created Yet', 'teknup-ai-mastering' ); ?></strong><br>
+							<?php esc_html_e( 'Click the button below to automatically create all subscription products.', 'teknup-ai-mastering' ); ?>
+						</p>
+					</div>
+				<?php else : ?>
+					<div class="notice notice-success inline">
+						<p><strong><?php esc_html_e( 'Products Created Successfully', 'teknup-ai-mastering' ); ?></strong></p>
+					</div>
+					<table class="widefat" style="margin-top: 10px; max-width: 600px;">
+						<thead>
+							<tr>
+								<th><?php esc_html_e( 'Product', 'teknup-ai-mastering' ); ?></th>
+								<th><?php esc_html_e( 'Price', 'teknup-ai-mastering' ); ?></th>
+								<th><?php esc_html_e( 'Status', 'teknup-ai-mastering' ); ?></th>
+								<th><?php esc_html_e( 'Action', 'teknup-ai-mastering' ); ?></th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php foreach ( $products_data as $slug => $data ) : ?>
+								<tr>
+									<td><?php echo esc_html( $data['name'] ); ?></td>
+									<td><?php echo esc_html( $data['price'] ); ?></td>
+									<td>
+										<?php if ( isset( $existing_products[ $slug ] ) ) : ?>
+											<span style="color: green;">✓ <?php esc_html_e( 'Created', 'teknup-ai-mastering' ); ?></span>
+										<?php else : ?>
+											<span style="color: red;">✗ <?php esc_html_e( 'Missing', 'teknup-ai-mastering' ); ?></span>
+										<?php endif; ?>
+									</td>
+									<td>
+										<?php if ( isset( $existing_products[ $slug ] ) ) : ?>
+											<a href="<?php echo esc_url( admin_url( 'post.php?post=' . $existing_products[ $slug ] . '&action=edit' ) ); ?>" class="button button-small">
+												<?php esc_html_e( 'Edit', 'teknup-ai-mastering' ); ?>
+											</a>
+										<?php endif; ?>
+									</td>
+								</tr>
+							<?php endforeach; ?>
+						</tbody>
+					</table>
+				<?php endif; ?>
+			<?php endif; ?>
+		</div>
+
+		<p style="margin-top: 15px;">
+			<button type="button" id="teknup-create-products" class="button button-primary" <?php echo ! class_exists( 'WC_Subscriptions' ) ? 'disabled' : ''; ?>>
+				<?php esc_html_e( 'Create/Recreate Products', 'teknup-ai-mastering' ); ?>
+			</button>
+			<span id="teknup-products-status-message" style="margin-left: 10px;"></span>
+		</p>
+
+		<p class="description">
+			<?php esc_html_e( 'This will create 4 subscription products: Free Trial (0€), Starter (19$), Pro (39$), and Label (99$). Existing products will not be duplicated.', 'teknup-ai-mastering' ); ?>
+		</p>
+		<?php
 	}
 
 	/**
@@ -340,6 +445,43 @@ class Settings {
 		}
 
 		wp_send_json_success( array( 'message' => __( 'Connection successful!', 'teknup-ai-mastering' ) ) );
+	}
+
+	/**
+	 * Create WooCommerce products via AJAX
+	 */
+	public function create_products() {
+		check_ajax_referer( 'wp_rest', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'teknup-ai-mastering' ) ) );
+		}
+
+		// Check if WooCommerce Subscriptions is available
+		if ( ! class_exists( 'WC_Subscriptions' ) ) {
+			wp_send_json_error( array( 'message' => __( 'WooCommerce Subscriptions is not installed or activated.', 'teknup-ai-mastering' ) ) );
+		}
+
+		// Reset the products option to force recreation
+		delete_option( 'teknup_subscription_products' );
+
+		// Call the installer method to create products (with force flag)
+		\Teknup\Core\Installer::create_woocommerce_products( true );
+
+		// Get the created products
+		$products = get_option( 'teknup_subscription_products', array() );
+
+		if ( empty( $products ) ) {
+			wp_send_json_error( array( 'message' => __( 'Failed to create products. Please check the error log.', 'teknup-ai-mastering' ) ) );
+		}
+
+		wp_send_json_success( array(
+			'message' => sprintf(
+				__( '%d products created successfully!', 'teknup-ai-mastering' ),
+				count( $products )
+			),
+			'products' => $products,
+		) );
 	}
 
 	/**

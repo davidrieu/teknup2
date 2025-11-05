@@ -27,6 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <script>
 jQuery(document).ready(function($) {
+	// Test API connection
 	$('#test-api-connection').on('click', function(e) {
 		e.preventDefault();
 
@@ -62,6 +63,46 @@ jQuery(document).ready(function($) {
 			},
 			complete: function() {
 				button.prop('disabled', false).text('Test Connection');
+			}
+		});
+	});
+
+	// Create WooCommerce products
+	$('#teknup-create-products').on('click', function(e) {
+		e.preventDefault();
+
+		if (!confirm('<?php esc_html_e( 'This will create/recreate all subscription products. Continue?', 'teknup-ai-mastering' ); ?>')) {
+			return;
+		}
+
+		var button = $(this);
+		var statusMessage = $('#teknup-products-status-message');
+
+		button.prop('disabled', true).text('<?php esc_html_e( 'Creating...', 'teknup-ai-mastering' ); ?>');
+		statusMessage.html('<span style="color: #999;"><?php esc_html_e( 'Creating products...', 'teknup-ai-mastering' ); ?></span>');
+
+		$.ajax({
+			url: ajaxurl,
+			type: 'POST',
+			data: {
+				action: 'teknup_create_products',
+				nonce: teknupAdmin.nonce
+			},
+			success: function(response) {
+				if (response.success) {
+					statusMessage.html('<span style="color: green;">✓ ' + response.data.message + '</span>');
+					// Reload page after 2 seconds to show the updated products table
+					setTimeout(function() {
+						location.reload();
+					}, 2000);
+				} else {
+					statusMessage.html('<span style="color: red;">✗ ' + response.data.message + '</span>');
+					button.prop('disabled', false).text('<?php esc_html_e( 'Create/Recreate Products', 'teknup-ai-mastering' ); ?>');
+				}
+			},
+			error: function() {
+				statusMessage.html('<span style="color: red;">✗ <?php esc_html_e( 'Failed to create products.', 'teknup-ai-mastering' ); ?></span>');
+				button.prop('disabled', false).text('<?php esc_html_e( 'Create/Recreate Products', 'teknup-ai-mastering' ); ?>');
 			}
 		});
 	});

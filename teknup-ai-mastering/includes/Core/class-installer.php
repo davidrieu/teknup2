@@ -202,8 +202,10 @@ class Installer {
 
 	/**
 	 * Create WooCommerce subscription products
+	 *
+	 * @param bool $force Force recreation even if products exist.
 	 */
-	private static function create_woocommerce_products() {
+	public static function create_woocommerce_products( $force = false ) {
 		// Check if WooCommerce Subscriptions is active
 		if ( ! class_exists( 'WC_Subscriptions' ) ) {
 			// Store flag to create products later when Subscriptions is activated
@@ -211,10 +213,12 @@ class Installer {
 			return;
 		}
 
-		// Check if products already exist
-		$existing_products = get_option( 'teknup_subscription_products', array() );
-		if ( ! empty( $existing_products ) ) {
-			return; // Products already created
+		// Check if products already exist (unless forced)
+		if ( ! $force ) {
+			$existing_products = get_option( 'teknup_subscription_products', array() );
+			if ( ! empty( $existing_products ) ) {
+				return; // Products already created
+			}
 		}
 
 		$products_created = array();
