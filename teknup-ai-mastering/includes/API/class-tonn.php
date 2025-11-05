@@ -22,7 +22,7 @@ class Tonn {
 	 *
 	 * @var string
 	 */
-	private $api_base_url = 'https://api.roexaudio.com/v1';
+	private $api_base_url = 'https://tonn.roexaudio.com';
 
 	/**
 	 * API token
@@ -63,24 +63,24 @@ class Tonn {
 			return new \WP_Error( 'no_api_token', __( 'Tonn API token is not configured.', 'teknup-ai-mastering' ) );
 		}
 
-		// Generate temporary URL for Tonn to download the file
-		$input_url = teknup_ai_mastering()->storage->generate_temp_url( $job_id );
-
-		if ( is_wp_error( $input_url ) ) {
-			return $input_url;
-		}
-
-		// Determine job type from settings
+		// Get settings
 		$settings = ! empty( $job->settings ) ? json_decode( $job->settings, true ) : array();
 		$job_type = isset( $settings['job_type'] ) ? $settings['job_type'] : 'mastering';
 
-		teknup_ai_mastering()->log( "Submitting job {$job_id} to Tonn ({$job_type}) with audio: {$input_url}", 'info' );
+		// Upload file to Tonn
+		$uploaded_url = $this->upload_file_to_tonn( $job );
+
+		if ( is_wp_error( $uploaded_url ) ) {
+			return $uploaded_url;
+		}
+
+		teknup_ai_mastering()->log( "Submitting job {$job_id} to Tonn ({$job_type}) with audio: {$uploaded_url}", 'info' );
 
 		// Submit based on job type
 		if ( $job_type === 'stem_separation' ) {
-			$response = $this->submit_stem_separation( $job_id, $input_url, $job );
+			$response = $this->submit_mix_enhance_with_stems( $job_id, $uploaded_url, $job );
 		} else {
-			$response = $this->submit_mastering( $job_id, $input_url, $job );
+			$response = $this->submit_mix_enhance( $job_id, $uploaded_url, $job );
 		}
 
 		if ( is_wp_error( $response ) ) {
@@ -96,113 +96,183 @@ class Tonn {
 			return $response;
 		}
 
-		// Store Tonn job ID
-		$tonn_job_id = isset( $response['id'] ) ? $response['id'] : null;
+		// Store Tonn task ID
+		$tonn_task_id = isset( $response['mixEnhanceTaskId'] ) ? $response['mixEnhanceTaskId'] : null;
 
-		if ( ! $tonn_job_id ) {
-			return new \WP_Error( 'no_job_id', __( 'No job ID returned from Tonn.', 'teknup-ai-mastering' ) );
+		if ( ! $tonn_task_id ) {
+			return new \WP_Error( 'no_task_id', __( 'No task ID returned from Tonn.', 'teknup-ai-mastering' ) );
 		}
 
-		// Update job with Tonn job ID
+		// Update job with Tonn task ID
 		teknup_ai_mastering()->database->update_job(
 			$job_id,
 			array(
-				'tonn_job_id' => $tonn_job_id,
+				'tonn_job_id' => $tonn_task_id,
 				'status' => 'processing',
+				'sent_to_tonn_at' => current_time( 'mysql' ),
 			)
 		);
 
-		teknup_ai_mastering()->log( "Job {$job_id} submitted to Tonn with job ID: {$tonn_job_id}", 'info' );
+		teknup_ai_mastering()->log( "Job {$job_id} submitted to Tonn with task ID: {$tonn_task_id}", 'info' );
 
 		return true;
 	}
 
 	/**
-	 * Submit mastering job
+	 * Upload file to Tonn storage
+	 *
+	 * @param object $job Job object.
+	 * @return string|WP_Error Uploaded URL or error.
+	 */
+	private function upload_file_to_tonn( $job ) {
+		// Get file path
+		$file_path = $job->original_filepath;
+
+		if ( ! file_exists( $file_path ) ) {
+			return new \WP_Error( 'file_not_found', __( 'Audio file not found.', 'teknup-ai-mastering' ) );
+		}
+
+		// Get file info
+		$filename = basename( $file_path );
+		$file_ext = strtolower( pathinfo( $filename, PATHINFO_EXTENSION ) );
+
+		// Determine content type
+		$content_types = array(
+			'wav' => 'audio/wav',
+			'mp3' => 'audio/mpeg',
+			'flac' => 'audio/flac',
+		);
+		$content_type = isset( $content_types[ $file_ext ] ) ? $content_types[ $file_ext ] : 'audio/wav';
+
+		// Step 1: Get upload URL
+		$upload_data = $this->make_request(
+			'POST',
+			'/upload',
+			array(
+				'filename' => $filename,
+				'contentType' => $content_type,
+			)
+		);
+
+		if ( is_wp_error( $upload_data ) ) {
+			return $upload_data;
+		}
+
+		if ( ! isset( $upload_data['signed_url'] ) || ! isset( $upload_data['readable_url'] ) ) {
+			return new \WP_Error( 'invalid_upload_response', __( 'Invalid upload response from Tonn.', 'teknup-ai-mastering' ) );
+		}
+
+		// Step 2: Upload file to signed URL
+		$file_contents = file_get_contents( $file_path );
+
+		$upload_response = wp_remote_request(
+			$upload_data['signed_url'],
+			array(
+				'method' => 'PUT',
+				'headers' => array(
+					'Content-Type' => $content_type,
+				),
+				'body' => $file_contents,
+				'timeout' => 120,
+			)
+		);
+
+		if ( is_wp_error( $upload_response ) ) {
+			return $upload_response;
+		}
+
+		$status_code = wp_remote_retrieve_response_code( $upload_response );
+
+		if ( $status_code !== 200 ) {
+			return new \WP_Error( 'upload_failed', __( 'Failed to upload file to Tonn.', 'teknup-ai-mastering' ) );
+		}
+
+		return $upload_data['readable_url'];
+	}
+
+	/**
+	 * Submit mix enhance job (mastering)
 	 *
 	 * @param int    $job_id Job ID.
-	 * @param string $input_url Input audio URL.
+	 * @param string $audio_url Uploaded audio URL.
 	 * @param object $job Job data.
 	 * @return array|WP_Error Response or error.
 	 */
-	private function submit_mastering( $job_id, $input_url, $job ) {
+	private function submit_mix_enhance( $job_id, $audio_url, $job ) {
 		$settings = ! empty( $job->settings ) ? json_decode( $job->settings, true ) : array();
 
 		$webhook_url = rest_url( 'teknup/v1/tonn/callback' );
 
 		teknup_ai_mastering()->log( "Webhook URL: {$webhook_url}", 'debug' );
 
-		// Prepare mastering parameters
+		// Prepare mix enhance parameters (mastering)
 		$body = array(
-			'input_url' => $input_url,
-			'webhook_url' => $webhook_url,
-			'job_type' => 'mastering',
-			'parameters' => array(
-				// Master level (loudness target in LUFS)
-				'target_loudness' => isset( $settings['target_loudness'] ) ? (float) $settings['target_loudness'] : -14.0,
-
-				// Mastering style
-				'style' => isset( $settings['mastering_style'] ) ? $settings['mastering_style'] : 'balanced',
-
-				// EQ adjustments
-				'enhance_bass' => isset( $settings['enhance_bass'] ) ? (bool) $settings['enhance_bass'] : false,
-				'enhance_treble' => isset( $settings['enhance_treble'] ) ? (bool) $settings['enhance_treble'] : false,
-
-				// Compression
-				'compression_amount' => isset( $settings['compression_amount'] ) ? $settings['compression_amount'] : 'medium',
-
-				// Output format
-				'output_format' => isset( $settings['output_format'] ) ? $settings['output_format'] : 'wav',
+			'mixEnhanceData' => array(
+				'audioFileLocation' => $audio_url,
+				'musicalStyle' => isset( $settings['musical_style'] ) ? strtoupper( $settings['musical_style'] ) : 'POP',
+				'fixLoudness' => isset( $settings['fix_loudness'] ) ? (bool) $settings['fix_loudness'] : true,
+				'fixStereoWidth' => isset( $settings['fix_stereo_width'] ) ? (bool) $settings['fix_stereo_width'] : true,
+				'fixTonalProfile' => isset( $settings['fix_tonal_profile'] ) ? (bool) $settings['fix_tonal_profile'] : true,
+				'applyMastering' => isset( $settings['apply_mastering'] ) ? (bool) $settings['apply_mastering'] : true,
+				'desiredLoudness' => isset( $settings['desired_loudness'] ) ? $settings['desired_loudness'] : 'STREAMING_LOUDNESS',
+				'returnStems' => false,
+				'sampleRate' => isset( $settings['sample_rate'] ) ? (int) $settings['sample_rate'] : 44100,
+				'webhookURL' => $webhook_url,
 			),
 		);
 
-		return $this->make_request( 'POST', '/jobs', $body );
+		return $this->make_request( 'POST', '/mixenhance', $body );
 	}
 
 	/**
-	 * Submit stem separation job
+	 * Submit mix enhance with stem separation
 	 *
 	 * @param int    $job_id Job ID.
-	 * @param string $input_url Input audio URL.
+	 * @param string $audio_url Uploaded audio URL.
 	 * @param object $job Job data.
 	 * @return array|WP_Error Response or error.
 	 */
-	private function submit_stem_separation( $job_id, $input_url, $job ) {
+	private function submit_mix_enhance_with_stems( $job_id, $audio_url, $job ) {
 		$settings = ! empty( $job->settings ) ? json_decode( $job->settings, true ) : array();
 
 		$webhook_url = rest_url( 'teknup/v1/tonn/callback' );
 
-		// Prepare stem separation parameters
+		// Mix Enhance + Stem Processing
 		$body = array(
-			'input_url' => $input_url,
-			'webhook_url' => $webhook_url,
-			'job_type' => 'stem_separation',
-			'parameters' => array(
-				// Number of stems (2-stem, 4-stem, 5-stem)
-				'num_stems' => isset( $settings['num_stems'] ) ? (int) $settings['num_stems'] : 4,
-
-				// Stem types: vocals, drums, bass, other, etc.
-				'stem_types' => isset( $settings['stem_types'] ) ? $settings['stem_types'] : array( 'vocals', 'drums', 'bass', 'other' ),
-
-				// Quality level
-				'quality' => isset( $settings['quality'] ) ? $settings['quality'] : 'high',
-
-				// Output format
-				'output_format' => isset( $settings['output_format'] ) ? $settings['output_format'] : 'wav',
+			'mixEnhanceData' => array(
+				'audioFileLocation' => $audio_url,
+				'musicalStyle' => isset( $settings['musical_style'] ) ? strtoupper( $settings['musical_style'] ) : 'POP',
+				'fixLoudness' => isset( $settings['fix_loudness'] ) ? (bool) $settings['fix_loudness'] : true,
+				'fixStereoWidth' => isset( $settings['fix_stereo_width'] ) ? (bool) $settings['fix_stereo_width'] : true,
+				'fixTonalProfile' => isset( $settings['fix_tonal_profile'] ) ? (bool) $settings['fix_tonal_profile'] : true,
+				'applyMastering' => isset( $settings['apply_mastering'] ) ? (bool) $settings['apply_mastering'] : true,
+				'desiredLoudness' => isset( $settings['desired_loudness'] ) ? $settings['desired_loudness'] : 'STREAMING_LOUDNESS',
+				'returnStems' => true, // Enable stem separation
+				'sampleRate' => isset( $settings['sample_rate'] ) ? (int) $settings['sample_rate'] : 44100,
+				'webhookURL' => $webhook_url,
 			),
 		);
 
-		return $this->make_request( 'POST', '/jobs', $body );
+		return $this->make_request( 'POST', '/mixenhance', $body );
 	}
 
 	/**
 	 * Check job status
 	 *
-	 * @param string $tonn_job_id Tonn job ID.
+	 * @param string $tonn_task_id Tonn task ID.
 	 * @return array|WP_Error Status data or error.
 	 */
-	public function check_job_status( $tonn_job_id ) {
-		return $this->make_request( 'GET', "/jobs/{$tonn_job_id}" );
+	public function check_job_status( $tonn_task_id ) {
+		// Retrieve mix enhance results
+		return $this->make_request(
+			'POST',
+			'/retrievemixenhance',
+			array(
+				'mixEnhanceData' => array(
+					'mixEnhanceTaskId' => $tonn_task_id,
+				),
+			)
+		);
 	}
 
 	/**
@@ -220,10 +290,10 @@ class Tonn {
 		$args = array(
 			'method' => $method,
 			'headers' => array(
-				'Authorization' => 'Bearer ' . $this->api_token,
+				'X-API-Key' => $this->api_token,
 				'Content-Type' => 'application/json',
 			),
-			'timeout' => 60, // Longer timeout for audio processing
+			'timeout' => 60,
 		);
 
 		if ( ! empty( $body ) && $method !== 'GET' ) {
@@ -237,7 +307,7 @@ class Tonn {
 		if ( is_wp_error( $response ) ) {
 			if ( $retry_count < $this->max_retries ) {
 				teknup_ai_mastering()->log( "Retry {$retry_count}/{$this->max_retries} for {$endpoint}", 'info' );
-				sleep( pow( 2, $retry_count ) ); // Exponential backoff
+				sleep( pow( 2, $retry_count ) );
 				return $this->make_request( $method, $endpoint, $body, $retry_count + 1 );
 			}
 
@@ -279,8 +349,15 @@ class Tonn {
 			return new \WP_Error( 'no_api_token', __( 'Tonn API token is not configured.', 'teknup-ai-mastering' ) );
 		}
 
-		// Test connection by checking account info or a simple endpoint
-		$response = $this->make_request( 'GET', '/account' );
+		// Test connection by attempting to get upload URL for a dummy file
+		$response = $this->make_request(
+			'POST',
+			'/upload',
+			array(
+				'filename' => 'test.wav',
+				'contentType' => 'audio/wav',
+			)
+		);
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -296,28 +373,31 @@ class Tonn {
 	 * @return bool Success status.
 	 */
 	public function handle_webhook( $data ) {
-		if ( ! isset( $data['id'] ) || ! isset( $data['status'] ) ) {
-			teknup_ai_mastering()->log( 'Invalid webhook data from Tonn', 'error' );
+		teknup_ai_mastering()->log( 'Processing Tonn webhook: ' . json_encode( $data ), 'debug' );
+
+		// Tonn Mix Enhance webhook format
+		if ( ! isset( $data['mixEnhanceTaskId'] ) || ! isset( $data['status'] ) ) {
+			teknup_ai_mastering()->log( 'Invalid webhook data from Tonn - missing required fields', 'error' );
 			return false;
 		}
 
-		$tonn_job_id = $data['id'];
+		$tonn_task_id = $data['mixEnhanceTaskId'];
 		$status = $data['status'];
 
-		// Find job by Tonn job ID
+		// Find job by Tonn task ID
 		global $wpdb;
 		$table_name = $wpdb->prefix . TEKNUP_TABLE_NAME;
 
 		$job = $wpdb->get_row(
 			$wpdb->prepare(
 				"SELECT * FROM {$table_name} WHERE tonn_job_id = %s",
-				$tonn_job_id
+				$tonn_task_id
 			),
 			ARRAY_A
 		);
 
 		if ( ! $job ) {
-			teknup_ai_mastering()->log( "Job not found for Tonn job ID: {$tonn_job_id}", 'error' );
+			teknup_ai_mastering()->log( "Job not found for Tonn task ID: {$tonn_task_id}", 'error' );
 			return false;
 		}
 
@@ -325,9 +405,10 @@ class Tonn {
 
 		teknup_ai_mastering()->log( "Webhook received for job {$job_id}, status: {$status}", 'info' );
 
-		if ( $status === 'completed' || $status === 'success' ) {
+		// Check status
+		if ( $status === 'MIX_ENHANCE_COMPLETED' ) {
 			return $this->handle_success( $job_id, $data );
-		} elseif ( $status === 'failed' || $status === 'error' ) {
+		} elseif ( $status === 'MIX_ENHANCE_FAILED' || $status === 'ERROR' ) {
 			return $this->handle_failure( $job_id, $data );
 		}
 
@@ -342,11 +423,14 @@ class Tonn {
 	 * @return bool Success status.
 	 */
 	private function handle_success( $job_id, $data ) {
-		$output = isset( $data['output'] ) ? $data['output'] : null;
+		// Get enhanced mix download URL
+		$download_url = isset( $data['mixEnhanceTaskResults']['enhancedMixDownloadURL'] )
+			? $data['mixEnhanceTaskResults']['enhancedMixDownloadURL']
+			: null;
 
-		if ( ! $output ) {
-			teknup_ai_mastering()->log( "No output in webhook for job {$job_id}", 'error' );
-			teknup_ai_mastering()->jobs->update_status( $job_id, 'failed', 'No output from Tonn' );
+		if ( ! $download_url ) {
+			teknup_ai_mastering()->log( "No download URL in webhook for job {$job_id}", 'error' );
+			teknup_ai_mastering()->jobs->update_status( $job_id, 'failed', 'No download URL from Tonn' );
 			return false;
 		}
 
@@ -354,14 +438,13 @@ class Tonn {
 		$settings = ! empty( $job->settings ) ? json_decode( $job->settings, true ) : array();
 		$job_type = isset( $settings['job_type'] ) ? $settings['job_type'] : 'mastering';
 
-		// Handle different output types
-		if ( $job_type === 'stem_separation' ) {
-			// Output is an array of stem URLs
-			return $this->save_stems( $job_id, $output );
+		// Handle stems if they were requested
+		if ( $job_type === 'stem_separation' && isset( $data['mixEnhanceTaskResults']['stemsDownloadURLs'] ) ) {
+			$stems = $data['mixEnhanceTaskResults']['stemsDownloadURLs'];
+			return $this->save_stems( $job_id, $stems, $download_url );
 		} else {
-			// Output is a single mastered file URL or object with URL
-			$output_url = is_array( $output ) ? ( isset( $output['url'] ) ? $output['url'] : ( $output[0] ?? null ) ) : $output;
-			return $this->save_mastered_file( $job_id, $output_url );
+			// Save mastered file
+			return $this->save_mastered_file( $job_id, $download_url );
 		}
 	}
 
@@ -369,18 +452,18 @@ class Tonn {
 	 * Save mastered file
 	 *
 	 * @param int    $job_id Job ID.
-	 * @param string $output_url Output file URL.
+	 * @param string $download_url Download URL.
 	 * @return bool Success status.
 	 */
-	private function save_mastered_file( $job_id, $output_url ) {
-		if ( empty( $output_url ) ) {
-			teknup_ai_mastering()->log( "Empty output URL for job {$job_id}", 'error' );
-			teknup_ai_mastering()->jobs->update_status( $job_id, 'failed', 'Empty output URL' );
+	private function save_mastered_file( $job_id, $download_url ) {
+		if ( empty( $download_url ) ) {
+			teknup_ai_mastering()->log( "Empty download URL for job {$job_id}", 'error' );
+			teknup_ai_mastering()->jobs->update_status( $job_id, 'failed', 'Empty download URL' );
 			return false;
 		}
 
 		// Download and save the mastered file
-		$result = teknup_ai_mastering()->storage->save_from_url( $output_url, $job_id, 'mastered' );
+		$result = teknup_ai_mastering()->storage->save_from_url( $download_url, $job_id, 'mastered' );
 
 		if ( is_wp_error( $result ) ) {
 			teknup_ai_mastering()->log( "Failed to save mastered file for job {$job_id}: " . $result->get_error_message(), 'error' );
@@ -398,13 +481,14 @@ class Tonn {
 	}
 
 	/**
-	 * Save stems
+	 * Save stems and full mix
 	 *
-	 * @param int   $job_id Job ID.
-	 * @param array $stems Stem URLs.
+	 * @param int    $job_id Job ID.
+	 * @param array  $stems Stem URLs.
+	 * @param string $full_mix_url Full mix URL.
 	 * @return bool Success status.
 	 */
-	private function save_stems( $job_id, $stems ) {
+	private function save_stems( $job_id, $stems, $full_mix_url ) {
 		if ( empty( $stems ) || ! is_array( $stems ) ) {
 			teknup_ai_mastering()->log( "Invalid stems data for job {$job_id}", 'error' );
 			teknup_ai_mastering()->jobs->update_status( $job_id, 'failed', 'Invalid stems data' );
@@ -413,11 +497,16 @@ class Tonn {
 
 		$saved_stems = array();
 
-		// Save each stem
-		foreach ( $stems as $stem_name => $stem_data ) {
-			// Handle different stem data formats
-			$stem_url = is_array( $stem_data ) ? ( isset( $stem_data['url'] ) ? $stem_data['url'] : null ) : $stem_data;
+		// Save full mix first
+		if ( ! empty( $full_mix_url ) ) {
+			$result = teknup_ai_mastering()->storage->save_from_url( $full_mix_url, $job_id, 'full_mix' );
+			if ( ! is_wp_error( $result ) ) {
+				$saved_stems['full_mix'] = $result;
+			}
+		}
 
+		// Save each stem
+		foreach ( $stems as $stem_name => $stem_url ) {
 			if ( empty( $stem_url ) ) {
 				continue;
 			}
