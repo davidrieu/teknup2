@@ -454,8 +454,10 @@ class Tonn {
 		);
 
 		if ( ! $job ) {
-			teknup_ai_mastering()->log( "Job not found for Tonn task ID: {$tonn_task_id}", 'error' );
-			return false;
+			// Job not found - this is OK during webhook testing by Tonn API
+			// Return true (200 OK) so Tonn accepts the webhook URL
+			teknup_ai_mastering()->log( "Job not found for Tonn task ID: {$tonn_task_id} (webhook test or timing issue)", 'debug' );
+			return true;
 		}
 
 		$job_id = $job['id'];
@@ -464,11 +466,17 @@ class Tonn {
 
 		// Check state and handle accordingly
 		// States: MIXREVIVE_TASK_STARTED, MIXREVIVE_TASK_SEPARATION, MIXREVIVE_TASK_MIX_MASTER_ENHANCEMENT,
-		//         MIXREVIVE_TASK_MIX_MASTER_CORRECTION, MIXREVIVE_TASK_COMPLETED, MIXREVIVE_TASK_FAILED
+		//         MIXREVIVE_TASK_MIX_MASTER_CORRECTION, MIXREVIVE_TASK_PREVIEW_COMPLETED,
+		//         MIXREVIVE_TASK_COMPLETED, MIXREVIVE_TASK_FAILED
 
 		if ( $state === 'MIXREVIVE_TASK_COMPLETED' || $state === 'COMPLETED' ) {
-			// Task completed - download_url_preview_revived should be available
+			// Task completed - full download_url_preview_revived should be available
 			return $this->handle_success( $job_id, $data );
+		} elseif ( $state === 'MIXREVIVE_TASK_PREVIEW_COMPLETED' ) {
+			// Preview completed - this is intermediate, just update status
+			teknup_ai_mastering()->log( "Preview completed for job {$job_id}", 'info' );
+			teknup_ai_mastering()->jobs->update_status( $job_id, 'processing', 'Preview completed, continuing full processing' );
+			return true;
 		} elseif ( $state === 'MIXREVIVE_TASK_FAILED' || $state === 'FAILED' || $state === 'ERROR' ) {
 			return $this->handle_failure( $job_id, $data );
 		} elseif ( $state === 'MIXREVIVE_TASK_STARTED' ) {
