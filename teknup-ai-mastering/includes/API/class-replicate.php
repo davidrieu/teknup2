@@ -85,7 +85,8 @@ class Replicate {
 		}
 
 		// Determine job type from settings
-		$job_type = isset( $job['settings']['job_type'] ) ? $job['settings']['job_type'] : 'mastering';
+		$settings = ! empty( $job->settings ) ? json_decode( $job->settings, true ) : array();
+		$job_type = isset( $settings['job_type'] ) ? $settings['job_type'] : 'mastering';
 
 		teknup_ai_mastering()->log( "Submitting job {$job_id} to Replicate ({$job_type}) with audio: {$input_url}", 'info' );
 
@@ -139,7 +140,7 @@ class Replicate {
 	 * @return array|WP_Error Response or error.
 	 */
 	private function submit_mastering( $job_id, $input_url, $job ) {
-		$settings = isset( $job['settings'] ) ? $job['settings'] : array();
+		$settings = ! empty( $job->settings ) ? json_decode( $job->settings, true ) : array();
 
 		// Prepare mastering parameters
 		$input = array(
@@ -172,7 +173,7 @@ class Replicate {
 	 * @return array|WP_Error Response or error.
 	 */
 	private function submit_stem_separation( $job_id, $input_url, $job ) {
-		$settings = isset( $job['settings'] ) ? $job['settings'] : array();
+		$settings = ! empty( $job->settings ) ? json_decode( $job->settings, true ) : array();
 
 		// Prepare stem separation parameters
 		$input = array(
@@ -372,7 +373,8 @@ class Replicate {
 		}
 
 		$job = teknup_ai_mastering()->jobs->get_job( $job_id );
-		$job_type = isset( $job['settings']['job_type'] ) ? $job['settings']['job_type'] : 'mastering';
+		$settings = ! empty( $job->settings ) ? json_decode( $job->settings, true ) : array();
+		$job_type = isset( $settings['job_type'] ) ? $settings['job_type'] : 'mastering';
 
 		// Handle different output types
 		if ( $job_type === 'stem_separation' ) {
