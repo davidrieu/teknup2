@@ -96,9 +96,12 @@ class Tonn {
 			return $response;
 		}
 
-		// Store Tonn task ID - support both formats
+		// Store Tonn task ID - Tonn returns 'mixrevive_task_id' with underscores
 		$tonn_task_id = null;
-		if ( isset( $response['mixEnhanceTaskId'] ) ) {
+		if ( isset( $response['mixrevive_task_id'] ) ) {
+			$tonn_task_id = $response['mixrevive_task_id'];
+		} elseif ( isset( $response['mixEnhanceTaskId'] ) ) {
+			// Fallback to camelCase format just in case
 			$tonn_task_id = $response['mixEnhanceTaskId'];
 		} elseif ( isset( $response['mixReviveTaskId'] ) ) {
 			$tonn_task_id = $response['mixReviveTaskId'];
