@@ -352,6 +352,8 @@ class Tonn {
 			return new \WP_Error( 'no_api_token', __( 'Tonn API token is not configured.', 'teknup-ai-mastering' ) );
 		}
 
+		teknup_ai_mastering()->log( 'Testing Tonn API connection with token: ' . substr( $this->api_token, 0, 8 ) . '...', 'debug' );
+
 		// Test connection by attempting to get upload URL for a dummy file
 		$response = $this->make_request(
 			'POST',
@@ -363,9 +365,51 @@ class Tonn {
 		);
 
 		if ( is_wp_error( $response ) ) {
+			$error_code = $response->get_error_code();
+			$error_message = $response->get_error_message();
+			$error_data = $response->get_error_data();
+
+			teknup_ai_mastering()->log(
+				sprintf(
+					'API connection test failed. Code: %s, Message: %s, Status: %s',
+					$error_code,
+					$error_message,
+					isset( $error_data['status'] ) ? $error_data['status'] : 'N/A'
+				),
+				'error'
+			);
+
+			// Provide more specific error messages based on status code
+			if ( isset( $error_data['status'] ) ) {
+				$status = $error_data['status'];
+
+				if ( $status === 401 ) {
+					return new \WP_Error(
+						'invalid_api_key',
+						__( 'Invalid API key. Please check that your API key is correct and active.', 'teknup-ai-mastering' )
+					);
+				} elseif ( $status === 403 ) {
+					return new \WP_Error(
+						'forbidden',
+						__( 'Access forbidden. Your API key may not have the required permissions.', 'teknup-ai-mastering' )
+					);
+				} elseif ( $status === 429 ) {
+					return new \WP_Error(
+						'rate_limit',
+						__( 'Rate limit exceeded. Please try again later.', 'teknup-ai-mastering' )
+					);
+				} elseif ( $status >= 500 ) {
+					return new \WP_Error(
+						'server_error',
+						__( 'Tonn API server error. Please try again later.', 'teknup-ai-mastering' )
+					);
+				}
+			}
+
 			return $response;
 		}
 
+		teknup_ai_mastering()->log( 'API connection test successful', 'debug' );
 		return true;
 	}
 
