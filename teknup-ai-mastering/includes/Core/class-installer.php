@@ -51,6 +51,9 @@ class Installer {
 		// Schedule cron events
 		self::schedule_cron_events();
 
+		// Create WooCommerce products
+		self::create_woocommerce_products();
+
 		// Flush rewrite rules
 		flush_rewrite_rules();
 
@@ -195,5 +198,201 @@ class Installer {
 		wp_clear_scheduled_hook( 'teknup_cleanup_old_files' );
 		wp_clear_scheduled_hook( 'teknup_cleanup_old_jobs' );
 		wp_clear_scheduled_hook( 'teknup_cleanup_transients' );
+	}
+
+	/**
+	 * Create WooCommerce subscription products
+	 */
+	private static function create_woocommerce_products() {
+		// Check if WooCommerce Subscriptions is active
+		if ( ! class_exists( 'WC_Subscriptions' ) ) {
+			// Store flag to create products later when Subscriptions is activated
+			update_option( 'teknup_needs_products_creation', true );
+			return;
+		}
+
+		// Check if products already exist
+		$existing_products = get_option( 'teknup_subscription_products', array() );
+		if ( ! empty( $existing_products ) ) {
+			return; // Products already created
+		}
+
+		$products_created = array();
+
+		// Define subscription products
+		$products = array(
+			'free_trial' => array(
+				'name' => 'Teknup Free Trial',
+				'price' => 0,
+				'description' => 'Test our AI mastering service with 3 free masters. No credit card required.',
+				'billing_period' => 'month',
+				'billing_interval' => 1,
+				'trial_length' => 0,
+				'features' => array(
+					'3 masters per month',
+					'Standard processing',
+					'All audio formats supported',
+					'Email support',
+				),
+			),
+			'starter' => array(
+				'name' => 'Teknup Starter',
+				'price' => 19,
+				'description' => 'Perfect for individual producers and hobbyists.',
+				'billing_period' => 'month',
+				'billing_interval' => 1,
+				'trial_length' => 0,
+				'features' => array(
+					'20 masters per month',
+					'All audio formats',
+					'Advanced intensity controls',
+					'Genre-specific presets',
+					'Unlimited revisions',
+					'Download history',
+					'Email support',
+				),
+			),
+			'pro' => array(
+				'name' => 'Teknup Pro',
+				'price' => 39,
+				'description' => 'For professional producers who need unlimited mastering.',
+				'billing_period' => 'month',
+				'billing_interval' => 1,
+				'trial_length' => 0,
+				'features' => array(
+					'Unlimited masters',
+					'Priority processing queue',
+					'Advanced controls',
+					'Target LUFS selection',
+					'Batch processing (5 tracks)',
+					'Reference track matching',
+					'Priority support',
+					'Commercial usage rights',
+				),
+			),
+			'label' => array(
+				'name' => 'Teknup Label',
+				'price' => 99,
+				'description' => 'Enterprise solution for record labels and studios. Contact us for custom pricing.',
+				'billing_period' => 'month',
+				'billing_interval' => 1,
+				'trial_length' => 0,
+				'features' => array(
+					'Everything in Pro',
+					'Dedicated account manager',
+					'API access',
+					'White-label option',
+					'Volume discounts',
+					'Custom integration',
+					'SLA guarantee',
+					'Phone support',
+				),
+			),
+		);
+
+		foreach ( $products as $slug => $product_data ) {
+			// Check if product already exists by slug
+			$existing = get_page_by_path( 'teknup-' . $slug, OBJECT, 'product' );
+			if ( $existing ) {
+				$products_created[ $slug ] = $existing->ID;
+				continue;
+			}
+
+			// Create product
+			$product = new \WC_Product_Subscription();
+
+			// Basic info
+			$product->set_name( $product_data['name'] );
+			$product->set_slug( 'teknup-' . $slug );
+			$product->set_status( 'publish' );
+			$product->set_catalog_visibility( 'visible' );
+			$product->set_description( $product_data['description'] );
+
+			// Short description with features
+			$short_desc = '<ul>';
+			foreach ( $product_data['features'] as $feature ) {
+				$short_desc .= '<li>' . esc_html( $feature ) . '</li>';
+			}
+			$short_desc .= '</ul>';
+			$product->set_short_description( $short_desc );
+
+			// Price
+			$product->set_regular_price( $product_data['price'] );
+
+			// Subscription settings
+			$product->update_meta_data( '_subscription_price', $product_data['price'] );
+			$product->update_meta_data( '_subscription_period', $product_data['billing_period'] );
+			$product->update_meta_data( '_subscription_period_interval', $product_data['billing_interval'] );
+			$product->update_meta_data( '_subscription_length', 0 ); // Never expires
+
+			// Trial period (only for free trial)
+			if ( $slug === 'free_trial' && $product_data['trial_length'] > 0 ) {
+				$product->update_meta_data( '_subscription_trial_length', $product_data['trial_length'] );
+				$product->update_meta_data( '_subscription_trial_period', $product_data['billing_period'] );
+			}
+
+			// Sign-up fee
+			$product->update_meta_data( '_subscription_sign_up_fee', 0 );
+
+			// Limit subscriptions
+			$product->update_meta_data( '_subscription_limit', 'active' ); // Only one active subscription
+
+			// Teknup plan slug
+			$product->update_meta_data( '_teknup_plan_slug', $slug );
+
+			// Virtual product
+			$product->set_virtual( true );
+
+			// Save product
+			$product_id = $product->save();
+
+			if ( $product_id ) {
+				$products_created[ $slug ] = $product_id;
+
+				// Add to Teknup category
+				$category_id = self::get_or_create_teknup_category();
+				if ( $category_id ) {
+					wp_set_post_terms( $product_id, array( $category_id ), 'product_cat' );
+				}
+			}
+		}
+
+		// Save product IDs
+		update_option( 'teknup_subscription_products', $products_created );
+
+		// Log creation
+		if ( function_exists( 'teknup_ai_mastering' ) ) {
+			teknup_ai_mastering()->log( 'WooCommerce subscription products created: ' . implode( ', ', array_keys( $products_created ) ), 'info' );
+		}
+	}
+
+	/**
+	 * Get or create Teknup product category
+	 *
+	 * @return int|null Category term ID or null on failure.
+	 */
+	private static function get_or_create_teknup_category() {
+		// Check if category exists
+		$term = get_term_by( 'slug', 'teknup-mastering', 'product_cat' );
+
+		if ( $term ) {
+			return $term->term_id;
+		}
+
+		// Create category
+		$result = wp_insert_term(
+			'Teknup AI Mastering',
+			'product_cat',
+			array(
+				'slug' => 'teknup-mastering',
+				'description' => 'Professional AI-powered audio mastering plans',
+			)
+		);
+
+		if ( is_wp_error( $result ) ) {
+			return null;
+		}
+
+		return $result['term_id'];
 	}
 }

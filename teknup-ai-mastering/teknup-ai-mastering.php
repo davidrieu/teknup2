@@ -3,7 +3,7 @@
  * Plugin Name: Teknup AI Mastering
  * Plugin URI: https://teknup.com
  * Description: Plugin WordPress complet pour un service SaaS de mastering audio professionnel utilisant l'API Dolby.io
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Teknup
  * Author URI: https://teknup.com
  * Text Domain: teknup-ai-mastering
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'TEKNUP_VERSION', '1.0.0' );
+define( 'TEKNUP_VERSION', '1.0.1' );
 define( 'TEKNUP_PLUGIN_FILE', __FILE__ );
 define( 'TEKNUP_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TEKNUP_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

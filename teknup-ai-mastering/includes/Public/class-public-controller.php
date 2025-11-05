@@ -39,6 +39,7 @@ class Public_Controller {
 		$this->account = new Account();
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_shortcode( 'teknup_mastering', array( $this, 'render_mastering_shortcode' ) );
 	}
 
 	/**
@@ -73,8 +74,16 @@ class Public_Controller {
 			true
 		);
 
+		wp_enqueue_script(
+			'teknup-main',
+			TEKNUP_PLUGIN_URL . 'assets/dist/main.js',
+			array( 'wp-element', 'wp-i18n' ),
+			TEKNUP_VERSION,
+			true
+		);
+
 		wp_localize_script(
-			'teknup-upload',
+			'teknup-main',
 			'teknupData',
 			array(
 				'restUrl' => rest_url( 'teknup/v1/' ),
@@ -99,10 +108,27 @@ class Public_Controller {
 
 		// Load on pages with shortcodes
 		global $post;
-		if ( $post && ( has_shortcode( $post->post_content, 'teknup_upload' ) || has_shortcode( $post->post_content, 'teknup_dashboard' ) ) ) {
+		if ( $post && ( has_shortcode( $post->post_content, 'teknup_upload' ) || has_shortcode( $post->post_content, 'teknup_dashboard' ) || has_shortcode( $post->post_content, 'teknup_mastering' ) ) ) {
 			return true;
 		}
 
 		return false;
+	}
+
+	/**
+	 * Render main mastering shortcode
+	 *
+	 * @return string Mastering app HTML.
+	 */
+	public function render_mastering_shortcode() {
+		if ( ! is_user_logged_in() ) {
+			return '<div class="teknup-login-message teknup-card">
+				<h3>' . __( 'Please Log In', 'teknup-ai-mastering' ) . '</h3>
+				<p>' . __( 'You need to be logged in to access the Teknup AI Mastering service.', 'teknup-ai-mastering' ) . '</p>
+				<p><a href="' . wp_login_url( get_permalink() ) . '" class="teknup-button">' . __( 'Log In', 'teknup-ai-mastering' ) . '</a></p>
+			</div>';
+		}
+
+		return '<div id="teknup-mastering-app"></div>';
 	}
 }

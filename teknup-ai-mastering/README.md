@@ -82,27 +82,38 @@ Après activation, aller dans **Teknup > Settings** :
 
 ### 2. Configuration WooCommerce
 
-#### Créer les produits d'abonnement
+#### Produits d'abonnement (création automatique)
 
-1. **Free Trial**
-   - Type : Abonnement simple
-   - Prix : Gratuit
-   - Meta personnalisée : `_teknup_plan_slug` = `free_trial`
+**Les produits sont créés automatiquement lors de l'activation du plugin !**
 
-2. **Starter - 19$/mois**
-   - Type : Abonnement simple
-   - Prix : 19$ / mois
-   - Meta personnalisée : `_teknup_plan_slug` = `starter`
+Le plugin crée automatiquement 4 produits WooCommerce Subscriptions :
 
-3. **Pro - 39$/mois**
-   - Type : Abonnement simple
-   - Prix : 39$ / mois
-   - Meta personnalisée : `_teknup_plan_slug` = `pro`
+1. **Teknup Free Trial** - 0€/mois
+   - 3 masters par mois
+   - Standard processing
+   - Slug : `teknup-free_trial`
 
-4. **Label - Prix personnalisé**
-   - Type : Abonnement simple
-   - Prix : Sur mesure
-   - Meta personnalisée : `_teknup_plan_slug` = `label`
+2. **Teknup Starter** - 19$/mois
+   - 20 masters par mois
+   - Contrôles avancés et presets
+   - Slug : `teknup-starter`
+
+3. **Teknup Pro** - 39$/mois
+   - Masters illimités
+   - File d'attente prioritaire
+   - Slug : `teknup-pro`
+
+4. **Teknup Label** - 99$/mois (tarification personnalisable)
+   - Tout du Pro + API, white-label, support dédié
+   - Slug : `teknup-label`
+
+Tous les produits sont automatiquement configurés avec :
+- Le meta `_teknup_plan_slug` correct
+- Les descriptions et features
+- La catégorie "Teknup AI Mastering"
+- Les paramètres d'abonnement appropriés
+
+**Note** : Si WooCommerce Subscriptions n'est pas installé lors de l'activation, les produits seront créés automatiquement quand vous l'installerez.
 
 ### 3. Configuration des pages
 
@@ -111,10 +122,27 @@ Le plugin ajoute automatiquement des sections dans WooCommerce My Account :
 - Upload Track
 - Mastering History
 
-Vous pouvez aussi utiliser les shortcodes :
-- `[teknup_upload]` - Page d'upload
-- `[teknup_dashboard]` - Dashboard utilisateur
-- `[teknup_history]` - Historique des jobs
+#### Shortcodes disponibles
+
+**Shortcode principal (recommandé)** :
+- `[teknup_mastering]` - **Interface complète avec onglets** (Upload + Dashboard)
+  - Affiche une interface avec tabs pour basculer entre l'upload et le dashboard
+  - Design moderne avec le système d'onglets Teknup
+  - **C'est le shortcode à utiliser sur votre page principale !**
+
+**Shortcodes individuels** :
+- `[teknup_upload]` - Page d'upload uniquement
+- `[teknup_dashboard]` - Dashboard utilisateur uniquement
+- `[teknup_history]` - Historique des jobs uniquement
+
+**Exemple d'utilisation** :
+
+Créez une page "Mon Studio" et ajoutez simplement :
+```
+[teknup_mastering]
+```
+
+Les utilisateurs pourront alors uploader leurs tracks et voir leur dashboard sur une seule page !
 
 ## 🎨 Personnalisation
 
@@ -319,6 +347,14 @@ POST /wp-json/teknup/v1/dolby/callback (webhook Dolby.io)
 5. Vérifier les réglages
 
 ## 📝 Changelog
+
+### Version 1.0.1
+- **Nouveau** : Shortcode principal `[teknup_mastering]` avec système d'onglets
+- **Nouveau** : Création automatique des produits WooCommerce à l'installation
+- **Nouveau** : Composant React MasteringApp avec navigation par tabs
+- **Amélioration** : Interface utilisateur unifiée sur une seule page
+- **Amélioration** : Design des tabs avec effet glass morphism
+- Les 4 produits d'abonnement sont maintenant créés automatiquement avec toutes leurs configurations
 
 ### Version 1.0.0
 - Version initiale

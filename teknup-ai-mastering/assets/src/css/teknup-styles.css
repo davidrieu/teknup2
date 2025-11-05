@@ -423,6 +423,66 @@
 	max-height: 300px;
 }
 
+/* Tabs */
+.teknup-tabs {
+	display: flex;
+	gap: var(--teknup-spacing-md);
+	margin-bottom: var(--teknup-spacing-xl);
+	border-bottom: 2px solid var(--teknup-border);
+	padding-bottom: var(--teknup-spacing-sm);
+}
+
+.teknup-tab {
+	background: transparent;
+	border: none;
+	color: var(--teknup-gray-light);
+	padding: var(--teknup-spacing-md) var(--teknup-spacing-lg);
+	cursor: pointer;
+	font-size: 16px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	transition: all 0.3s ease;
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: var(--teknup-spacing-sm);
+}
+
+.teknup-tab:hover {
+	color: var(--teknup-red-light);
+}
+
+.teknup-tab.active {
+	color: var(--teknup-red);
+}
+
+.teknup-tab.active::after {
+	content: '';
+	position: absolute;
+	bottom: -10px;
+	left: 0;
+	right: 0;
+	height: 2px;
+	background: linear-gradient(90deg, var(--teknup-red) 0%, var(--teknup-red-light) 100%);
+	box-shadow: 0 0 10px var(--teknup-red);
+}
+
+.teknup-tab-icon {
+	font-size: 20px;
+}
+
+.teknup-tab-content {
+	animation: teknup-fade-in 0.5s ease;
+}
+
+/* Mastering App Container */
+.teknup-mastering-app {
+	background: var(--teknup-bg-dark);
+	padding: var(--teknup-spacing-lg);
+	min-height: 500px;
+}
+
 /* Animations */
 @keyframes teknup-fade-in {
 	from {
