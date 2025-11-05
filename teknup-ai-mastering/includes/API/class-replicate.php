@@ -43,7 +43,7 @@ class Replicate {
 	 *
 	 * @var string
 	 */
-	private $mastering_model = 'myaiteam2/audio-mastering';
+	private $mastering_model = 'resemble-ai/resemble-enhance';
 
 	/**
 	 * Stem separation model
@@ -151,17 +151,16 @@ class Replicate {
 			);
 		}
 
-		// Prepare mastering parameters
+		// Prepare resemble-enhance parameters
 		$input = array(
-			'input_file' => $input_url,
-			'ddim_steps' => isset( $settings['ddim_steps'] ) ? (int) $settings['ddim_steps'] : 50,
-			'guidance_scale' => isset( $settings['guidance_scale'] ) ? (float) $settings['guidance_scale'] : 3.5,
+			'audio' => $input_url,
+			'solver' => isset( $settings['solver'] ) ? $settings['solver'] : 'Midpoint',
+			'nfe' => isset( $settings['nfe'] ) ? (int) $settings['nfe'] : 64,
+			'tau' => isset( $settings['tau'] ) ? (float) $settings['tau'] : 0.5,
+			'denoising' => isset( $settings['denoising'] ) ? (bool) $settings['denoising'] : true,
+			'chunk_seconds' => isset( $settings['chunk_seconds'] ) ? (int) $settings['chunk_seconds'] : 10,
+			'chunks_overlap' => isset( $settings['chunks_overlap'] ) ? (int) $settings['chunks_overlap'] : 1,
 		);
-
-		// Optional seed
-		if ( isset( $settings['seed'] ) && ! empty( $settings['seed'] ) ) {
-			$input['seed'] = (int) $settings['seed'];
-		}
 
 		$webhook_url = rest_url( 'teknup/v1/replicate/callback' );
 
@@ -346,7 +345,7 @@ class Replicate {
 			return new \WP_Error( 'no_api_token', __( 'Replicate API token is not configured.', 'teknup-ai-mastering' ) );
 		}
 
-		// Try to get account info
+		// Try to get model info to verify API token
 		$response = $this->make_request( 'GET', '/models/' . $this->mastering_model );
 
 		if ( is_wp_error( $response ) ) {
