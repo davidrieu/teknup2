@@ -331,7 +331,8 @@ class Tonn {
 		$data = json_decode( $body_data, true );
 
 		if ( $status_code < 200 || $status_code >= 300 ) {
-			$error_message = isset( $data['error'] ) ? $data['error'] : ( isset( $data['message'] ) ? $data['message'] : 'Tonn API error' );
+			// Get error message - prioritize 'message' field over 'error' boolean
+			$error_message = isset( $data['message'] ) ? $data['message'] : ( isset( $data['error'] ) && is_string( $data['error'] ) ? $data['error'] : 'Tonn API error' );
 
 			teknup_ai_mastering()->log(
 				"Tonn API error {$status_code}: {$error_message} | Response: " . $body_data,
