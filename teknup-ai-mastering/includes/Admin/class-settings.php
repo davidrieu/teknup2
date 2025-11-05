@@ -38,20 +38,20 @@ class Settings {
 			)
 		);
 
-		// Replicate.com section
+		// Tonn API section
 		add_settings_section(
-			'teknup_replicate_section',
-			__( 'Replicate.com API Configuration', 'teknup-ai-mastering' ),
-			array( $this, 'render_replicate_section' ),
+			'teknup_tonn_section',
+			__( 'Tonn ROEX API Configuration', 'teknup-ai-mastering' ),
+			array( $this, 'render_tonn_section' ),
 			'teknup_settings'
 		);
 
 		add_settings_field(
-			'replicate_api_token',
+			'tonn_api_token',
 			__( 'API Token', 'teknup-ai-mastering' ),
 			array( $this, 'render_api_token_field' ),
 			'teknup_settings',
-			'teknup_replicate_section'
+			'teknup_tonn_section'
 		);
 
 		// WooCommerce section
@@ -136,8 +136,8 @@ class Settings {
 	public function sanitize_settings( $input ) {
 		$sanitized = array();
 
-		if ( isset( $input['replicate_api_token'] ) ) {
-			$sanitized['replicate_api_token'] = sanitize_text_field( $input['replicate_api_token'] );
+		if ( isset( $input['tonn_api_token'] ) ) {
+			$sanitized['tonn_api_token'] = sanitize_text_field( $input['tonn_api_token'] );
 		}
 
 		if ( isset( $input['max_file_size'] ) ) {
@@ -163,10 +163,10 @@ class Settings {
 	}
 
 	/**
-	 * Render Dolby section description
+	 * Render Tonn section description
 	 */
-	public function render_replicate_section() {
-		echo '<p>' . esc_html__( 'Configure your Replicate.com API credentials. You can get your API token from your Replicate account at replicate.com/account/api-tokens.', 'teknup-ai-mastering' ) . '</p>';
+	public function render_tonn_section() {
+		echo '<p>' . esc_html__( 'Configure your Tonn ROEX API credentials. Professional AI-powered audio mastering and mixing API. Get your API token from your Tonn account.', 'teknup-ai-mastering' ) . '</p>';
 	}
 
 	/**
@@ -268,12 +268,12 @@ class Settings {
 	 * Render API token field
 	 */
 	public function render_api_token_field() {
-		$value = teknup_ai_mastering()->get_setting( 'replicate_api_token', '' );
+		$value = teknup_ai_mastering()->get_setting( 'tonn_api_token', '' );
 		?>
 		<input
 			type="password"
-			name="teknup_settings[replicate_api_token]"
-			id="replicate_api_token"
+			name="teknup_settings[tonn_api_token]"
+			id="tonn_api_token"
 			value="<?php echo esc_attr( $value ); ?>"
 			class="regular-text"
 		/>
@@ -282,7 +282,7 @@ class Settings {
 		</button>
 		<span id="api-connection-status"></span>
 		<p class="description">
-			<?php esc_html_e( 'Your Replicate.com API token. Get it from replicate.com/account/api-tokens. This is stored securely and never exposed to users.', 'teknup-ai-mastering' ); ?>
+			<?php esc_html_e( 'Your Tonn ROEX API token. This is stored securely and never exposed to users.', 'teknup-ai-mastering' ); ?>
 		</p>
 		<?php
 	}
@@ -429,14 +429,14 @@ class Settings {
 		}
 
 		// Temporarily set the API token for testing
-		$current_token = teknup_ai_mastering()->get_setting( 'replicate_api_token' );
-		teknup_ai_mastering()->update_setting( 'replicate_api_token', $api_key );
+		$current_token = teknup_ai_mastering()->get_setting( 'tonn_api_token' );
+		teknup_ai_mastering()->update_setting( 'tonn_api_token', $api_key );
 
-		$replicate = new \Teknup\API\Replicate();
-		$result = $replicate->test_connection();
+		$tonn = new \Teknup\API\Tonn();
+		$result = $tonn->test_connection();
 
 		// Restore original token
-		teknup_ai_mastering()->update_setting( 'replicate_api_token', $current_token );
+		teknup_ai_mastering()->update_setting( 'tonn_api_token', $current_token );
 
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ) );

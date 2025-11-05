@@ -33,7 +33,7 @@ jQuery(document).ready(function($) {
 
 		var button = $(this);
 		var status = $('#api-connection-status');
-		var apiKey = $('#replicate_api_token').val();
+		var apiKey = $('#tonn_api_token').val();
 
 		if (!apiKey) {
 			status.html('<span style="color: red;">Please enter an API key first.</span>');

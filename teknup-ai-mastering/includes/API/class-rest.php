@@ -120,13 +120,13 @@ class REST {
 			)
 		);
 
-		// Replicate webhook callback
+		// Tonn webhook callback
 		register_rest_route(
 			$this->namespace,
-			'/replicate/callback',
+			'/tonn/callback',
 			array(
 				'methods' => 'POST',
-				'callback' => array( $this, 'replicate_callback' ),
+				'callback' => array( $this, 'tonn_callback' ),
 				'permission_callback' => '__return_true', // Public endpoint
 			)
 		);
@@ -332,13 +332,13 @@ class REST {
 			)
 		);
 
-		// Submit to Replicate
-		$replicate = new Replicate();
-		$result = $replicate->submit_job( $job_id );
+		// Submit to Tonn
+		$tonn = new Tonn();
+		$result = $tonn->submit_job( $job_id );
 
 		if ( is_wp_error( $result ) ) {
 			teknup_ai_mastering()->log(
-				'Failed to submit job to Replicate: ' . $result->get_error_message() . ' | Code: ' . $result->get_error_code(),
+				'Failed to submit job to Tonn: ' . $result->get_error_message() . ' | Code: ' . $result->get_error_code(),
 				'error'
 			);
 
@@ -507,10 +507,10 @@ class REST {
 	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response Response object.
 	 */
-	public function replicate_callback( $request ) {
+	public function tonn_callback( $request ) {
 		$body = $request->get_json_params();
 
-		teknup_ai_mastering()->log( 'Received Replicate webhook: ' . json_encode( $body ), 'info' );
+		teknup_ai_mastering()->log( 'Received Tonn webhook: ' . json_encode( $body ), 'info' );
 
 		if ( ! isset( $body['id'] ) || ! isset( $body['status'] ) ) {
 			return new \WP_REST_Response(
@@ -519,9 +519,9 @@ class REST {
 			);
 		}
 
-		// Handle webhook with Replicate API
-		$replicate = new \Teknup\API\Replicate();
-		$result = $replicate->handle_webhook( $body );
+		// Handle webhook with Tonn API
+		$tonn = new \Teknup\API\Tonn();
+		$result = $tonn->handle_webhook( $body );
 
 		if ( ! $result ) {
 			return new \WP_REST_Response(

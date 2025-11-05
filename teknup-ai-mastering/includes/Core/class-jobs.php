@@ -271,11 +271,11 @@ class Jobs {
 	 * @return int|null Processing time in seconds or null.
 	 */
 	private function calculate_processing_time( $job ) {
-		if ( empty( $job->sent_to_replicate_at ) || empty( $job->completed_at ) ) {
+		if ( empty( $job->sent_to_tonn_at ) || empty( $job->completed_at ) ) {
 			return null;
 		}
 
-		$start = strtotime( $job->sent_to_replicate_at );
+		$start = strtotime( $job->sent_to_tonn_at );
 		$end = strtotime( $job->completed_at );
 
 		return $end - $start;

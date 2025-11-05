@@ -84,7 +84,7 @@ class Installer {
 		$sql = "CREATE TABLE IF NOT EXISTS $table_name (
 			id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
 			user_id bigint(20) UNSIGNED NOT NULL,
-			replicate_prediction_id varchar(255) DEFAULT NULL,
+			tonn_job_id varchar(255) DEFAULT NULL,
 			original_filename varchar(255) NOT NULL,
 			original_filepath varchar(500) NOT NULL,
 			mastered_filepath varchar(500) DEFAULT NULL,
@@ -99,7 +99,7 @@ class Installer {
 			settings longtext DEFAULT NULL,
 			created_at datetime NOT NULL,
 			uploaded_at datetime DEFAULT NULL,
-			sent_to_replicate_at datetime DEFAULT NULL,
+			sent_to_tonn_at datetime DEFAULT NULL,
 			processing_started_at datetime DEFAULT NULL,
 			completed_at datetime DEFAULT NULL,
 			failed_at datetime DEFAULT NULL,
@@ -108,7 +108,7 @@ class Installer {
 			KEY user_id (user_id),
 			KEY status (status),
 			KEY created_at (created_at),
-			KEY replicate_prediction_id (replicate_prediction_id)
+			KEY tonn_job_id (tonn_job_id)
 		) $charset_collate;";
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -155,7 +155,7 @@ class Installer {
 	 */
 	private static function set_default_options() {
 		$default_settings = array(
-			'dolby_api_key' => '',
+			'tonn_api_token' => '',
 			'max_file_size' => 500, // MB
 			'default_intensity' => 'medium',
 			'default_lufs' => -14.0,
