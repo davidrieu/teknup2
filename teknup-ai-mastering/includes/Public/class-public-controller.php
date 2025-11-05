@@ -62,7 +62,7 @@ class Public_Controller {
 		wp_enqueue_script(
 			'teknup-upload',
 			TEKNUP_PLUGIN_URL . 'assets/dist/upload.js',
-			array( 'wp-element', 'wp-i18n' ),
+			array(),
 			TEKNUP_VERSION,
 			true
 		);
@@ -70,7 +70,7 @@ class Public_Controller {
 		wp_enqueue_script(
 			'teknup-dashboard',
 			TEKNUP_PLUGIN_URL . 'assets/dist/dashboard.js',
-			array( 'wp-element', 'wp-i18n' ),
+			array(),
 			TEKNUP_VERSION,
 			true
 		);
@@ -78,7 +78,7 @@ class Public_Controller {
 		wp_enqueue_script(
 			'teknup-main',
 			TEKNUP_PLUGIN_URL . 'assets/dist/main.js',
-			array( 'wp-element', 'wp-i18n' ),
+			array(),
 			TEKNUP_VERSION,
 			true
 		);
