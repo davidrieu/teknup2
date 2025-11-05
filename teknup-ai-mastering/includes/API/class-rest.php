@@ -502,7 +502,7 @@ class REST {
 	}
 
 	/**
-	 * Replicate webhook callback endpoint
+	 * Tonn webhook callback endpoint
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response Response object.

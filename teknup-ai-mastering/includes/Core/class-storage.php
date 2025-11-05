@@ -140,7 +140,7 @@ class Storage {
 	}
 
 	/**
-	 * Generate temporary public URL for Replicate to access the file
+	 * Generate temporary public URL for Tonn API to access the file
 	 *
 	 * @param int $job_id Job ID.
 	 * @return string|WP_Error Public URL or WP_Error on failure.
@@ -205,7 +205,7 @@ class Storage {
 	 * @param string $type File type.
 	 */
 	public function handle_download( $token, $type ) {
-		// Try temporary token first (for Replicate API access)
+		// Try temporary token first (for Tonn API access)
 		$data = get_transient( 'teknup_temp_token_' . $token );
 		$is_temp = true;
 
@@ -323,7 +323,7 @@ class Storage {
 		if ( wp_remote_retrieve_response_code( $response ) !== 200 ) {
 			return new \WP_Error(
 				'download_failed',
-				__( 'Failed to download mastered file from Replicate.', 'teknup-ai-mastering' )
+				__( 'Failed to download mastered file from Tonn.', 'teknup-ai-mastering' )
 			);
 		}
 

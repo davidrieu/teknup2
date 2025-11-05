@@ -314,13 +314,13 @@ class Jobs {
 			array(
 				'error_message' => null,
 				'failed_at' => null,
-				'replicate_prediction_id' => null,
+				'tonn_job_id' => null,
 			)
 		);
 
-		// Send to Replicate
-		$replicate = new \Teknup\API\Replicate();
-		$result = $replicate->submit_job( $job_id );
+		// Send to Tonn
+		$tonn = new \Teknup\API\Tonn();
+		$result = $tonn->submit_job( $job_id );
 
 		return $result;
 	}
