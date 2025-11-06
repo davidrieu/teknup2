@@ -97,8 +97,13 @@ const StemSeparation = () => {
 			}
 
 			// Poll for job status
-			setJob(data);
-			pollJobStatus(data.id);
+			if (data.job && data.job.id) {
+				setJob(data.job);
+				pollJobStatus(data.job.id);
+			} else {
+				setError('Failed to create job. Please try again.');
+				setUploading(false);
+			}
 
 		} catch (err) {
 			setError('Upload failed. Please try again.');
