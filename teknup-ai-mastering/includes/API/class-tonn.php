@@ -379,7 +379,7 @@ class Tonn {
 				'applyMastering'         => $intensity_settings['applyMastering'],
 				'loudnessPreference'     => $loudness_preference,
 				'stemProcessing'         => true, // Enable stem separation
-				'getProcessedStems'      => true, // Get processed stems
+				'returnStems'            => true, // Return individual stems (based on RoEx examples)
 				'webhookURL'             => $webhook_url,
 			),
 		);
@@ -695,7 +695,7 @@ class Tonn {
 
 		if ( ! $download_url ) {
 			teknup_ai_mastering()->log( "No download URL in webhook for job {$job_id}. Data: " . json_encode( $data ), 'error' );
-			teknup_ai_mastering()->jobs->update_status( $job_id, 'failed', 'No download URL from Tonn' );
+			teknup_ai_mastering()->jobs->update_status( $job_id, 'failed', array( 'error_message' => 'No download URL from Tonn' ) );
 			return false;
 		}
 
@@ -767,7 +767,7 @@ class Tonn {
 	private function save_stems( $job_id, $stems, $full_mix_url ) {
 		if ( empty( $stems ) || ! is_array( $stems ) ) {
 			teknup_ai_mastering()->log( "Invalid stems data for job {$job_id}", 'error' );
-			teknup_ai_mastering()->jobs->update_status( $job_id, 'failed', 'Invalid stems data' );
+			teknup_ai_mastering()->jobs->update_status( $job_id, 'failed', array( 'error_message' => 'Invalid stems data' ) );
 			return false;
 		}
 
@@ -798,7 +798,7 @@ class Tonn {
 		}
 
 		if ( empty( $saved_stems ) ) {
-			teknup_ai_mastering()->jobs->update_status( $job_id, 'failed', 'Failed to save any stems' );
+			teknup_ai_mastering()->jobs->update_status( $job_id, 'failed', array( 'error_message' => 'Failed to save any stems' ) );
 			return false;
 		}
 
@@ -829,7 +829,7 @@ class Tonn {
 
 		teknup_ai_mastering()->log( "Job {$job_id} failed: {$error_message}", 'error' );
 
-		teknup_ai_mastering()->jobs->update_status( $job_id, 'failed', $error_message );
+		teknup_ai_mastering()->jobs->update_status( $job_id, 'failed', array( 'error_message' => $error_message ) );
 
 		return true;
 	}
