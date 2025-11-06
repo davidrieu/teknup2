@@ -573,24 +573,17 @@ class Tonn {
 			return false;
 		}
 
-		// Get job to extract the filename from the filepath
-		$job = teknup_ai_mastering()->jobs->get_job( $job_id );
-		$mastered_filename = basename( $result );
-
 		teknup_ai_mastering()->log( "Updating job {$job_id} with filepath: {$result}", 'debug' );
 
-		// Update job status with file paths
+		// Update job status with file path (mastered_filename field doesn't exist in DB schema)
+		// Note: update_status() will trigger do_action('teknup_job_completed') automatically
 		teknup_ai_mastering()->jobs->update_status(
 			$job_id,
 			'completed',
 			array(
 				'mastered_filepath' => $result,
-				'mastered_filename' => $mastered_filename,
 			)
 		);
-
-		// Send notification email
-		do_action( 'teknup_job_completed', $job_id );
 
 		return true;
 	}
