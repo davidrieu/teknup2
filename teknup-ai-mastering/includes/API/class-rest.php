@@ -308,6 +308,7 @@ class REST {
 				'original_filepath' => '', // Will be updated after upload
 				'file_size' => 0, // Will be updated after upload
 				'status' => 'pending',
+				'job_type' => $job_type, // Save to direct column
 				'intensity' => $intensity,
 				'genre' => $genre,
 				'target_lufs' => $target_lufs,

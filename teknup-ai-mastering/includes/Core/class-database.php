@@ -49,20 +49,22 @@ class Database {
 			$data,
 			array(
 				'%d', // user_id
-				'%s', // dolby_job_id
+				'%s', // tonn_job_id (was dolby_job_id)
 				'%s', // original_filename
 				'%s', // original_filepath
 				'%s', // mastered_filepath
 				'%d', // file_size
 				'%s', // status
+				'%s', // job_type
 				'%s', // intensity
 				'%s', // genre
 				'%f', // target_lufs
 				'%s', // error_message
-				'%s', // dolby_response
+				'%s', // stems_data
+				'%s', // settings
 				'%s', // created_at
 				'%s', // uploaded_at
-				'%s', // sent_to_dolby_at
+				'%s', // sent_to_tonn_at (was sent_to_dolby_at)
 				'%s', // processing_started_at
 				'%s', // completed_at
 				'%s', // failed_at

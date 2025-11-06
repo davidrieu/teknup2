@@ -63,12 +63,11 @@ class Tonn {
 			return new \WP_Error( 'no_api_token', __( 'Tonn API token is not configured.', 'teknup-ai-mastering' ) );
 		}
 
-		// Get settings
-		$settings = ! empty( $job->settings ) ? json_decode( $job->settings, true ) : array();
-		$job_type = isset( $settings['job_type'] ) ? $settings['job_type'] : 'mastering';
+		// Get job type from direct column (preferred) or fallback to settings JSON
+		$job_type = ! empty( $job->job_type ) ? $job->job_type : 'mastering';
 
 		// Debug: Log what we're reading from database
-		teknup_ai_mastering()->log( "DEBUG submit_job({$job_id}): settings from DB = " . json_encode( $settings ) . ", job_type = {$job_type}", 'info' );
+		teknup_ai_mastering()->log( "DEBUG submit_job({$job_id}): job_type from DB column = {$job_type}", 'info' );
 
 		// Upload file to Tonn
 		$uploaded_url = $this->upload_file_to_tonn( $job );
