@@ -289,10 +289,16 @@ class REST {
 		$target_lufs = $request->get_param( 'target_lufs' ) ? (float) $request->get_param( 'target_lufs' ) : -9.0;
 		$job_type = sanitize_text_field( $request->get_param( 'job_type' ) ?: 'mastering' );
 
+		// Debug: Log what we received from frontend
+		teknup_ai_mastering()->log( "DEBUG REST upload: Received job_type = {$job_type}", 'info' );
+
 		// Prepare job settings
 		$settings = array(
 			'job_type' => $job_type,
 		);
+
+		// Debug: Log what we're saving to database
+		teknup_ai_mastering()->log( "DEBUG REST upload: Saving settings = " . json_encode( $settings ), 'info' );
 
 		// Create job first (to get job ID)
 		$job_id = teknup_ai_mastering()->jobs->create_job(

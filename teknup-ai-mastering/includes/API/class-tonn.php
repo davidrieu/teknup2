@@ -67,6 +67,9 @@ class Tonn {
 		$settings = ! empty( $job->settings ) ? json_decode( $job->settings, true ) : array();
 		$job_type = isset( $settings['job_type'] ) ? $settings['job_type'] : 'mastering';
 
+		// Debug: Log what we're reading from database
+		teknup_ai_mastering()->log( "DEBUG submit_job({$job_id}): settings from DB = " . json_encode( $settings ) . ", job_type = {$job_type}", 'info' );
+
 		// Upload file to Tonn
 		$uploaded_url = $this->upload_file_to_tonn( $job );
 
