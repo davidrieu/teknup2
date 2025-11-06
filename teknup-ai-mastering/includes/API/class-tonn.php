@@ -280,7 +280,7 @@ class Tonn {
 		// Retrieve mix enhance results
 		return $this->make_request(
 			'POST',
-			'/retrievemixenhance',
+			'/retrieveenhancedtrack',
 			array(
 				'mixReviveData' => array(
 					'mixReviveTaskId' => $tonn_task_id,
@@ -482,13 +482,13 @@ class Tonn {
 		} elseif ( $state === 'MIXREVIVE_TASK_PREVIEW_COMPLETED' ) {
 			// Preview completed - this is intermediate, just update status
 			teknup_ai_mastering()->log( "Preview completed for job {$job_id}", 'info' );
-			teknup_ai_mastering()->jobs->update_status( $job_id, 'processing', 'Preview completed, continuing full processing' );
+			teknup_ai_mastering()->jobs->update_status( $job_id, 'processing', array() );
 			return true;
 		} elseif ( $state === 'MIXREVIVE_TASK_FAILED' || $state === 'FAILED' || $state === 'ERROR' ) {
 			return $this->handle_failure( $job_id, $data );
 		} elseif ( $state === 'MIXREVIVE_TASK_STARTED' ) {
 			// Update job status to processing
-			teknup_ai_mastering()->jobs->update_status( $job_id, 'processing', 'Task started' );
+			teknup_ai_mastering()->jobs->update_status( $job_id, 'processing', array() );
 		}
 
 		// For intermediate states (SEPARATION, ENHANCEMENT, CORRECTION), just log and continue
