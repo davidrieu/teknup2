@@ -595,9 +595,24 @@ class Tonn {
 			// Task completed - full download_url_revived should be available
 			return $this->handle_success( $job_id, $data );
 		} elseif ( $state === 'MIXREVIVE_TASK_PREVIEW_COMPLETED' ) {
-			// PREVIEW_COMPLETED is no longer used - all jobs (mastering + stems) use paid /mixenhance endpoint
-			// This means they skip PREVIEW and go directly to COMPLETED state
-			teknup_ai_mastering()->log( "WARNING: Received PREVIEW_COMPLETED for job {$job_id}, but paid mode uses COMPLETED. Ignoring this webhook.", 'warning' );
+			// PREVIEW_COMPLETED is sent even for /mixenhance (paid mode)
+			// Check if download_url_revived (no watermark) is available, otherwise use preview
+			teknup_ai_mastering()->log( "Preview completed for job {$job_id}, checking for download URLs", 'info' );
+
+			// Prefer download_url_revived (no watermark) if available
+			if ( isset( $data['download_url_revived'] ) && ! empty( $data['download_url_revived'] ) ) {
+				teknup_ai_mastering()->log( "Full quality file (no watermark) available", 'info' );
+				return $this->handle_success( $job_id, $data );
+			}
+
+			// Fallback to preview URL (may have watermark with /mixenhancepreview)
+			if ( isset( $data['download_url_preview_revived'] ) && ! empty( $data['download_url_preview_revived'] ) ) {
+				teknup_ai_mastering()->log( "Preview file available - using it", 'info' );
+				return $this->handle_success( $job_id, $data );
+			}
+
+			// No URL available yet
+			teknup_ai_mastering()->log( "No download URL available yet", 'warning' );
 			return true;
 
 			// OLD CODE below (never executed) - kept for reference:
