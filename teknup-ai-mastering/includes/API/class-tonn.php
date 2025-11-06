@@ -450,7 +450,7 @@ class Tonn {
 
 		// Find job by Tonn task ID
 		global $wpdb;
-		$table_name = $wpdb->prefix . TEKNUP_TABLE_NAME;
+		$table_name = $wpdb->prefix . 'teknup_jobs';
 
 		$job = $wpdb->get_row(
 			$wpdb->prepare(
