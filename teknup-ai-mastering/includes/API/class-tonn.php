@@ -313,11 +313,11 @@ class Tonn {
 		$loudness_preference = $this->map_lufs_to_loudness_preference( $target_lufs );
 		$intensity_settings = $this->map_intensity_to_settings( $intensity );
 
-		teknup_ai_mastering()->log( "Submitting PREVIEW job {$job_id} (free with watermark) with user parameters: genre={$genre}, intensity={$intensity}, target_lufs={$target_lufs}", 'info' );
+		teknup_ai_mastering()->log( "Submitting PAID mastering job {$job_id} (no watermark, consumes credits) with user parameters: genre={$genre}, intensity={$intensity}, target_lufs={$target_lufs}", 'info' );
 		teknup_ai_mastering()->log( "Mapped to Tonn parameters: musicalStyle={$musical_style}, loudnessPreference={$loudness_preference}", 'info' );
 		teknup_ai_mastering()->log( "Webhook URL: {$webhook_url}", 'debug' );
 
-		// Prepare mix revive parameters (mastering) for PREVIEW mode
+		// Prepare mix revive parameters (mastering) for PAID mode
 		$body = array(
 			'mixReviveData' => array(
 				'audioFileLocation'      => $audio_url,
@@ -335,7 +335,7 @@ class Tonn {
 			),
 		);
 
-		return $this->make_request( 'POST', '/mixenhancepreview', $body );
+		return $this->make_request( 'POST', '/mixenhance', $body );
 	}
 
 	/**
@@ -595,6 +595,12 @@ class Tonn {
 			// Task completed - full download_url_revived should be available
 			return $this->handle_success( $job_id, $data );
 		} elseif ( $state === 'MIXREVIVE_TASK_PREVIEW_COMPLETED' ) {
+			// PREVIEW_COMPLETED is no longer used - all jobs (mastering + stems) use paid /mixenhance endpoint
+			// This means they skip PREVIEW and go directly to COMPLETED state
+			teknup_ai_mastering()->log( "WARNING: Received PREVIEW_COMPLETED for job {$job_id}, but paid mode uses COMPLETED. Ignoring this webhook.", 'warning' );
+			return true;
+
+			// OLD CODE below (never executed) - kept for reference:
 			// Get job details to check job type
 			$job_obj = teknup_ai_mastering()->jobs->get_job( $job_id );
 			$settings = ! empty( $job_obj->settings ) ? json_decode( $job_obj->settings, true ) : array();

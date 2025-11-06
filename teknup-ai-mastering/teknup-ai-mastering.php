@@ -3,7 +3,7 @@
  * Plugin Name: Teknup AI Mastering
  * Plugin URI: https://teknup.com
  * Description: Plugin WordPress complet pour un service SaaS de mastering audio professionnel et séparation des stems utilisant l'API Tonn ROEX
- * Version: 2.1.18
+ * Version: 2.1.19
  * Author: Teknup
  * Author URI: https://teknup.com
  * Text Domain: teknup-ai-mastering

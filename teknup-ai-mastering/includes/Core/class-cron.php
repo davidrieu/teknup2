@@ -95,24 +95,26 @@ class Cron {
 				$settings = ! empty( $job->settings ) ? json_decode( $job->settings, true ) : array();
 				$job_type = isset( $settings['job_type'] ) ? $settings['job_type'] : 'mastering';
 
-				// Check if preview track (with watermark) is ready
-				// In preview mode, we use download_url_preview_revived (free mode for mastering only)
+				// Check if track is ready (paid mode for both mastering and stems)
+				// Both job types now use download_url_revived from /mixenhance endpoint
 				if ( isset( $status['revivedTrackTaskResults'] ) && ! empty( $status['revivedTrackTaskResults'] ) ) {
 					$track_data = $status['revivedTrackTaskResults'];
 
-					// For mastering jobs, finalize with preview mode (free)
-					// For stem_separation jobs, wait for COMPLETED state with stems (paid)
-					if ( $job_type === 'mastering' && isset( $track_data['download_url_preview_revived'] ) && ! empty( $track_data['download_url_preview_revived'] ) ) {
-						teknup_ai_mastering()->log( "Cron: Preview track available for mastering job {$job->id}, finalizing (free mode)", 'info' );
+					// Both mastering and stem jobs now use paid mode with download_url_revived
+					// All jobs finalize at COMPLETED state (no more preview mode)
+					if ( isset( $track_data['download_url_revived'] ) && ! empty( $track_data['download_url_revived'] ) ) {
+						teknup_ai_mastering()->log( "Cron: Track ready for {$job_type} job {$job->id}, finalizing (paid mode)", 'info' );
 						$tonn->handle_webhook(
 							array_merge(
 								$track_data,
 								array(
 									'mixrevive_task_id' => $job->tonn_job_id,
-									'state' => 'MIXREVIVE_TASK_PREVIEW_COMPLETED',
+									'state' => 'MIXREVIVE_TASK_COMPLETED',
 								)
 							)
 						);
+					}
+					/* REMOVED elseif - both job types now use same logic above
 					} elseif ( $job_type === 'stem_separation' && isset( $track_data['download_url_revived'] ) && ! empty( $track_data['download_url_revived'] ) ) {
 						// For stem jobs, finalize with COMPLETED state when stems are ready
 						teknup_ai_mastering()->log( "Cron: Stems available for job {$job->id}, finalizing (paid mode)", 'info' );
@@ -125,7 +127,7 @@ class Cron {
 								)
 							)
 						);
-					}
+					} */
 				}
 			} elseif ( $job->status === 'pending' ) {
 				// Job hasn't been sent to Tonn yet, mark as stuck if too old
