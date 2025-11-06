@@ -205,6 +205,8 @@ class Storage {
 	 * @param string $type File type.
 	 */
 	public function handle_download( $token, $type ) {
+		teknup_ai_mastering()->log( "Download requested with token: {$token}, type: {$type}", 'debug' );
+
 		// Try temporary token first (for Tonn API access)
 		$data = get_transient( 'teknup_temp_token_' . $token );
 		$is_temp = true;
@@ -216,21 +218,30 @@ class Storage {
 		}
 
 		if ( ! $data ) {
+			teknup_ai_mastering()->log( "Invalid or expired token: {$token}", 'error' );
 			wp_die( __( 'Invalid or expired download link.', 'teknup-ai-mastering' ) );
 		}
 
+		teknup_ai_mastering()->log( "Token validated. Is temp: " . ( $is_temp ? 'yes' : 'no' ), 'debug' );
+
 		// Check if user matches (for user downloads only, not temp URLs)
 		if ( ! $is_temp && isset( $data['user_id'] ) && $data['user_id'] !== get_current_user_id() && ! current_user_can( 'manage_options' ) ) {
+			teknup_ai_mastering()->log( "Permission denied for user ID: " . get_current_user_id(), 'error' );
 			wp_die( __( 'You do not have permission to download this file.', 'teknup-ai-mastering' ) );
 		}
 
 		// Get job ID (temp tokens store job_id directly, download tokens store array)
 		$job_id = $is_temp ? $data : ( isset( $data['job_id'] ) ? $data['job_id'] : $data );
+		teknup_ai_mastering()->log( "Looking for job ID: {$job_id}", 'debug' );
+
 		$job = teknup_ai_mastering()->jobs->get_job( $job_id );
 
 		if ( ! $job ) {
+			teknup_ai_mastering()->log( "Job {$job_id} not found in database", 'error' );
 			wp_die( __( 'Job not found.', 'teknup-ai-mastering' ) );
 		}
+
+		teknup_ai_mastering()->log( "Job {$job_id} found. Status: {$job->status}", 'debug' );
 
 		// Get file path
 		if ( $type === 'original' ) {
@@ -242,9 +253,15 @@ class Storage {
 			$filename = str_replace( '.' . $ext, '_mastered.' . $ext, $job->original_filename );
 		}
 
+		teknup_ai_mastering()->log( "Attempting to download file: {$filepath}", 'debug' );
+		teknup_ai_mastering()->log( "File exists check: " . ( file_exists( $filepath ) ? 'yes' : 'no' ), 'debug' );
+
 		if ( ! file_exists( $filepath ) ) {
+			teknup_ai_mastering()->log( "File not found at path: {$filepath}", 'error' );
 			wp_die( __( 'File not found.', 'teknup-ai-mastering' ) );
 		}
+
+		teknup_ai_mastering()->log( "Streaming file {$filename} to user", 'info' );
 
 		// Stream file
 		$this->stream_file( $filepath, $filename );
