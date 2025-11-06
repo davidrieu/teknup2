@@ -334,7 +334,7 @@ const StemSeparation = () => {
 									{job.stems.map((stem, index) => (
 										<a
 											key={index}
-											href={getDownloadUrl(stem.token, 'stem')}
+											href={stem.url}
 											className="teknup-button-secondary"
 											style={{ textDecoration: 'none', padding: '12px' }}
 										>
@@ -346,11 +346,11 @@ const StemSeparation = () => {
 						)}
 
 						{/* Download Full Mix */}
-						{job.download_token && (
+						{job.download_url && (
 							<div style={{ marginBottom: '24px' }}>
 								<h4 className="teknup-text" style={{ marginBottom: '12px' }}>Full Processed Mix:</h4>
 								<a
-									href={getDownloadUrl(job.download_token, 'mastered')}
+									href={job.download_url}
 									className="teknup-button"
 									style={{ textDecoration: 'none', display: 'inline-block' }}
 								>

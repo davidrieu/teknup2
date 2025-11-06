@@ -254,7 +254,7 @@ class Jobs {
 				foreach ( $stems_data as $stem_name => $stem_path ) {
 					$stems[] = array(
 						'name' => ucfirst( str_replace( '_', ' ', $stem_name ) ),
-						'token' => teknup_ai_mastering()->storage->generate_download_token( $job->id, $stem_name ),
+						'url' => teknup_ai_mastering()->storage->generate_download_url( $job->id, $stem_name ),
 					);
 				}
 			}
@@ -275,7 +275,8 @@ class Jobs {
 				? teknup_ai_mastering()->storage->generate_download_url( $job->id, 'mastered' )
 				: null,
 			'download_token' => $job->status === 'completed' && $job->mastered_filepath
-				? teknup_ai_mastering()->storage->generate_download_token( $job->id, 'mastered' )
+				// REMOVED: token generation not needed, using download_url directly
+			? null
 				: null,
 			'stems' => $stems,
 			'processing_time' => $this->calculate_processing_time( $job ),
