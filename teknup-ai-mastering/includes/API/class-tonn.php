@@ -477,20 +477,38 @@ class Tonn {
 		//         MIXREVIVE_TASK_COMPLETED, MIXREVIVE_TASK_FAILED
 
 		if ( $state === 'MIXREVIVE_TASK_COMPLETED' || $state === 'COMPLETED' ) {
-			// Task completed - full download_url_preview_revived should be available
+			// Task completed - full download_url_revived should be available
 			return $this->handle_success( $job_id, $data );
 		} elseif ( $state === 'MIXREVIVE_TASK_PREVIEW_COMPLETED' ) {
-			// Preview completed - check if this is the final state
-			// For /mixenhance jobs without stems, this is often the final callback with download URLs
-			if ( isset( $data['download_url_preview_revived'] ) && ! empty( $data['download_url_preview_revived'] ) ) {
-				teknup_ai_mastering()->log( "Preview completed with download URL for job {$job_id} - treating as final state", 'info' );
-				return $this->handle_success( $job_id, $data );
-			} else {
-				// No download URL yet, this is truly intermediate
-				teknup_ai_mastering()->log( "Preview completed for job {$job_id} (intermediate state)", 'info' );
+			// Preview completed - fetch final results to get download_url_revived (without watermark)
+			// The webhook only gives download_url_preview_revived which has "ROEX AUDIO" watermark
+			teknup_ai_mastering()->log( "Preview completed for job {$job_id}, fetching final track results", 'info' );
+
+			// Call /retrieveenhancedtrack to get the final file without watermark
+			$final_results = $this->check_job_status( $tonn_task_id );
+
+			if ( is_wp_error( $final_results ) ) {
+				teknup_ai_mastering()->log( "Failed to retrieve final results for job {$job_id}: " . $final_results->get_error_message(), 'error' );
+				// Keep processing status, cron will retry later
 				teknup_ai_mastering()->jobs->update_status( $job_id, 'processing', array() );
 				return true;
 			}
+
+			// Check if we have the final track results
+			if ( isset( $final_results['revivedTrackTaskResults'] ) && ! empty( $final_results['revivedTrackTaskResults'] ) ) {
+				$track_data = $final_results['revivedTrackTaskResults'];
+
+				// Check if final download URL (without watermark) is available
+				if ( isset( $track_data['download_url_revived'] ) && ! empty( $track_data['download_url_revived'] ) ) {
+					teknup_ai_mastering()->log( "Final track (without watermark) available for job {$job_id}", 'info' );
+					return $this->handle_success( $job_id, $track_data );
+				}
+			}
+
+			// Final track not ready yet, keep processing
+			teknup_ai_mastering()->log( "Final track not ready yet for job {$job_id}, will retry via cron", 'info' );
+			teknup_ai_mastering()->jobs->update_status( $job_id, 'processing', array() );
+			return true;
 		} elseif ( $state === 'MIXREVIVE_TASK_FAILED' || $state === 'FAILED' || $state === 'ERROR' ) {
 			return $this->handle_failure( $job_id, $data );
 		} elseif ( $state === 'MIXREVIVE_TASK_STARTED' ) {

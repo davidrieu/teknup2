@@ -91,8 +91,24 @@ class Cron {
 					continue;
 				}
 
-				// Tonn handles webhooks, so status will be updated automatically
-				// We don't need to manually update job status here
+				// Check if final track (without watermark) is ready
+				if ( isset( $status['revivedTrackTaskResults'] ) && ! empty( $status['revivedTrackTaskResults'] ) ) {
+					$track_data = $status['revivedTrackTaskResults'];
+
+					// If download_url_revived is available, finalize the job
+					if ( isset( $track_data['download_url_revived'] ) && ! empty( $track_data['download_url_revived'] ) ) {
+						teknup_ai_mastering()->log( "Cron: Final track available for job {$job->id}, finalizing", 'info' );
+						$tonn->handle_webhook(
+							array_merge(
+								$track_data,
+								array(
+									'mixrevive_task_id' => $job->tonn_job_id,
+									'state' => 'COMPLETED',
+								)
+							)
+						);
+					}
+				}
 			} elseif ( $job->status === 'pending' ) {
 				// Job hasn't been sent to Tonn yet, mark as stuck if too old
 				if ( strtotime( $job->created_at ) < strtotime( '-10 minutes' ) ) {
