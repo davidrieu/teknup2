@@ -359,11 +359,11 @@ class Tonn {
 		$loudness_preference = $this->map_lufs_to_loudness_preference( $target_lufs );
 		$intensity_settings = $this->map_intensity_to_settings( $intensity );
 
-		teknup_ai_mastering()->log( "Submitting PREVIEW stem separation job {$job_id} (free with watermark) with user parameters: genre={$genre}, intensity={$intensity}, target_lufs={$target_lufs}", 'info' );
+		teknup_ai_mastering()->log( "Submitting PAID stem separation job {$job_id} (consumes credits) with user parameters: genre={$genre}, intensity={$intensity}, target_lufs={$target_lufs}", 'info' );
 		teknup_ai_mastering()->log( "Mapped to Tonn parameters: musicalStyle={$musical_style}, loudnessPreference={$loudness_preference}", 'info' );
 		teknup_ai_mastering()->log( "Webhook URL: {$webhook_url}", 'debug' );
 
-		// Mix Revive + Stem Processing for PREVIEW mode
+		// Mix Revive + Stem Processing (PAID mode - required for stem separation)
 		$body = array(
 			'mixReviveData' => array(
 				'audioFileLocation'      => $audio_url,
@@ -382,7 +382,7 @@ class Tonn {
 			),
 		);
 
-		return $this->make_request( 'POST', '/mixenhancepreview', $body );
+		return $this->make_request( 'POST', '/mixenhance', $body );
 	}
 
 	/**
@@ -595,8 +595,20 @@ class Tonn {
 			// Task completed - full download_url_revived should be available
 			return $this->handle_success( $job_id, $data );
 		} elseif ( $state === 'MIXREVIVE_TASK_PREVIEW_COMPLETED' ) {
-			// Preview completed - use preview file with watermark (free mode for testing)
-			teknup_ai_mastering()->log( "Preview completed for job {$job_id}, using preview with watermark (free mode)", 'info' );
+			// Get job details to check job type
+			$job_obj = teknup_ai_mastering()->jobs->get_job( $job_id );
+			$settings = ! empty( $job_obj->settings ) ? json_decode( $job_obj->settings, true ) : array();
+			$job_type = isset( $settings['job_type'] ) ? $settings['job_type'] : 'mastering';
+
+			// For stem_separation jobs, we need the COMPLETED state with stems, not preview
+			if ( $job_type === 'stem_separation' ) {
+				teknup_ai_mastering()->log( "Preview completed for stem separation job {$job_id}, waiting for COMPLETED state with stems...", 'info' );
+				teknup_ai_mastering()->jobs->update_status( $job_id, 'processing', array() );
+				return true;
+			}
+
+			// For mastering jobs, use preview file with watermark (free mode)
+			teknup_ai_mastering()->log( "Preview completed for mastering job {$job_id}, using preview with watermark (free mode)", 'info' );
 
 			// Check if preview download URL is available
 			if ( isset( $data['download_url_preview_revived'] ) && ! empty( $data['download_url_preview_revived'] ) ) {

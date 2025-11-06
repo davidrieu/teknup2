@@ -91,20 +91,37 @@ class Cron {
 					continue;
 				}
 
+				// Check job type
+				$settings = ! empty( $job->settings ) ? json_decode( $job->settings, true ) : array();
+				$job_type = isset( $settings['job_type'] ) ? $settings['job_type'] : 'mastering';
+
 				// Check if preview track (with watermark) is ready
-				// In preview mode, we use download_url_preview_revived (free mode for testing)
+				// In preview mode, we use download_url_preview_revived (free mode for mastering only)
 				if ( isset( $status['revivedTrackTaskResults'] ) && ! empty( $status['revivedTrackTaskResults'] ) ) {
 					$track_data = $status['revivedTrackTaskResults'];
 
-					// If download_url_preview_revived is available, finalize the job (preview mode)
-					if ( isset( $track_data['download_url_preview_revived'] ) && ! empty( $track_data['download_url_preview_revived'] ) ) {
-						teknup_ai_mastering()->log( "Cron: Preview track available for job {$job->id}, finalizing (free mode)", 'info' );
+					// For mastering jobs, finalize with preview mode (free)
+					// For stem_separation jobs, wait for COMPLETED state with stems (paid)
+					if ( $job_type === 'mastering' && isset( $track_data['download_url_preview_revived'] ) && ! empty( $track_data['download_url_preview_revived'] ) ) {
+						teknup_ai_mastering()->log( "Cron: Preview track available for mastering job {$job->id}, finalizing (free mode)", 'info' );
 						$tonn->handle_webhook(
 							array_merge(
 								$track_data,
 								array(
 									'mixrevive_task_id' => $job->tonn_job_id,
 									'state' => 'MIXREVIVE_TASK_PREVIEW_COMPLETED',
+								)
+							)
+						);
+					} elseif ( $job_type === 'stem_separation' && isset( $track_data['download_url_revived'] ) && ! empty( $track_data['download_url_revived'] ) ) {
+						// For stem jobs, finalize with COMPLETED state when stems are ready
+						teknup_ai_mastering()->log( "Cron: Stems available for job {$job->id}, finalizing (paid mode)", 'info' );
+						$tonn->handle_webhook(
+							array_merge(
+								$track_data,
+								array(
+									'mixrevive_task_id' => $job->tonn_job_id,
+									'state' => 'MIXREVIVE_TASK_COMPLETED',
 								)
 							)
 						);
