@@ -288,9 +288,12 @@ class Storage {
 	 * @return string|WP_Error File path or WP_Error on failure.
 	 */
 	public function save_from_url( $url, $job_id ) {
+		teknup_ai_mastering()->log( "Downloading mastered file for job {$job_id} from URL: {$url}", 'info' );
+
 		// Get job to get original filename
 		$job = teknup_ai_mastering()->jobs->get_job( $job_id );
 		if ( ! $job ) {
+			teknup_ai_mastering()->log( "Job {$job_id} not found when trying to save from URL", 'error' );
 			return new \WP_Error( 'job_not_found', __( 'Job not found.', 'teknup-ai-mastering' ) );
 		}
 
@@ -305,8 +308,10 @@ class Storage {
 		);
 
 		$filepath = TEKNUP_MASTERED_DIR . '/' . $filename;
+		teknup_ai_mastering()->log( "Target filepath: {$filepath}", 'debug' );
 
 		// Download file
+		teknup_ai_mastering()->log( "Starting file download...", 'debug' );
 		$response = wp_remote_get(
 			$url,
 			array(
@@ -317,18 +322,32 @@ class Storage {
 		);
 
 		if ( is_wp_error( $response ) ) {
+			teknup_ai_mastering()->log( "Download failed for job {$job_id}: " . $response->get_error_message(), 'error' );
 			return $response;
 		}
 
-		if ( wp_remote_retrieve_response_code( $response ) !== 200 ) {
+		$response_code = wp_remote_retrieve_response_code( $response );
+		teknup_ai_mastering()->log( "Download response code: {$response_code}", 'debug' );
+
+		if ( $response_code !== 200 ) {
+			teknup_ai_mastering()->log( "Download failed for job {$job_id}: HTTP {$response_code}", 'error' );
 			return new \WP_Error(
 				'download_failed',
 				__( 'Failed to download mastered file from Tonn.', 'teknup-ai-mastering' )
 			);
 		}
 
+		// Verify file exists
+		if ( ! file_exists( $filepath ) ) {
+			teknup_ai_mastering()->log( "File was not created at {$filepath}", 'error' );
+			return new \WP_Error( 'file_not_created', __( 'Downloaded file not found on server.', 'teknup-ai-mastering' ) );
+		}
+
 		// Set proper permissions
 		chmod( $filepath, 0644 );
+
+		$filesize = filesize( $filepath );
+		teknup_ai_mastering()->log( "File downloaded successfully for job {$job_id}. Size: {$filesize} bytes. Path: {$filepath}", 'info' );
 
 		return $filepath;
 	}

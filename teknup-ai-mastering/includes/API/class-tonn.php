@@ -558,21 +558,36 @@ class Tonn {
 	private function save_mastered_file( $job_id, $download_url ) {
 		if ( empty( $download_url ) ) {
 			teknup_ai_mastering()->log( "Empty download URL for job {$job_id}", 'error' );
-			teknup_ai_mastering()->jobs->update_status( $job_id, 'failed', 'Empty download URL' );
+			teknup_ai_mastering()->jobs->update_status( $job_id, 'failed', array( 'error_message' => 'Empty download URL' ) );
 			return false;
 		}
 
+		teknup_ai_mastering()->log( "Processing completed job {$job_id}, downloading file from {$download_url}", 'info' );
+
 		// Download and save the mastered file
-		$result = teknup_ai_mastering()->storage->save_from_url( $download_url, $job_id, 'mastered' );
+		$result = teknup_ai_mastering()->storage->save_from_url( $download_url, $job_id );
 
 		if ( is_wp_error( $result ) ) {
 			teknup_ai_mastering()->log( "Failed to save mastered file for job {$job_id}: " . $result->get_error_message(), 'error' );
-			teknup_ai_mastering()->jobs->update_status( $job_id, 'failed', $result->get_error_message() );
+			teknup_ai_mastering()->jobs->update_status( $job_id, 'failed', array( 'error_message' => $result->get_error_message() ) );
 			return false;
 		}
 
-		// Update job status
-		teknup_ai_mastering()->jobs->update_status( $job_id, 'completed' );
+		// Get job to extract the filename from the filepath
+		$job = teknup_ai_mastering()->jobs->get_job( $job_id );
+		$mastered_filename = basename( $result );
+
+		teknup_ai_mastering()->log( "Updating job {$job_id} with filepath: {$result}", 'debug' );
+
+		// Update job status with file paths
+		teknup_ai_mastering()->jobs->update_status(
+			$job_id,
+			'completed',
+			array(
+				'mastered_filepath' => $result,
+				'mastered_filename' => $mastered_filename,
+			)
+		);
 
 		// Send notification email
 		do_action( 'teknup_job_completed', $job_id );
