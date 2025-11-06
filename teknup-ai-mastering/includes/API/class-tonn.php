@@ -366,6 +366,7 @@ class Tonn {
 		teknup_ai_mastering()->log( "Webhook URL: {$webhook_url}", 'debug' );
 
 		// Mix Revive + Stem Processing (PAID mode - required for stem separation)
+		// Note: applyMastering set to FALSE for stem jobs - mastering may not be compatible with stem processing
 		$body = array(
 			'mixReviveData' => array(
 				'audioFileLocation'      => $audio_url,
@@ -376,7 +377,7 @@ class Tonn {
 				'fixStereoWidthIssues'   => $intensity_settings['fixStereoWidthIssues'],
 				'fixTonalProfileIssues'  => $intensity_settings['fixTonalProfileIssues'],
 				'fixLoudnessIssues'      => $intensity_settings['fixLoudnessIssues'],
-				'applyMastering'         => $intensity_settings['applyMastering'],
+				'applyMastering'         => false, // Disable mastering for stem jobs
 				'loudnessPreference'     => $loudness_preference,
 				'stemProcessing'         => true, // Enable stem separation
 				'returnStems'            => true, // Return individual stems (based on RoEx examples)
