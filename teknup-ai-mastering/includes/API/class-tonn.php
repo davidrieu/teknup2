@@ -597,24 +597,41 @@ class Tonn {
 			// Task completed - full download_url_revived should be available
 			return $this->handle_success( $job_id, $data );
 		} elseif ( $state === 'MIXREVIVE_TASK_PREVIEW_COMPLETED' ) {
-			// PREVIEW_COMPLETED is sent even for /mixenhance (paid mode)
-			// Check if download_url_revived (no watermark) is available, otherwise use preview
-			teknup_ai_mastering()->log( "Preview completed for job {$job_id}, checking for download URLs", 'info' );
+			// PREVIEW_COMPLETED webhook received - now retrieve the FINAL paid version
+			// For paid mode, we must call /retrieveenhancedtrack to get download_url_revived (no watermark)
+			// This is separate from the preview (download_url_preview_revived)
+			teknup_ai_mastering()->log( "Preview completed for job {$job_id}, retrieving FINAL paid version...", 'info' );
 
-			// Prefer download_url_revived (no watermark) if available
-			if ( isset( $data['download_url_revived'] ) && ! empty( $data['download_url_revived'] ) ) {
-				teknup_ai_mastering()->log( "Full quality file (no watermark) available", 'info' );
-				return $this->handle_success( $job_id, $data );
+			$tonn_task_id = isset( $data['mixrevive_task_id'] ) ? $data['mixrevive_task_id'] : null;
+			if ( ! $tonn_task_id ) {
+				teknup_ai_mastering()->log( "No task ID in PREVIEW_COMPLETED webhook for job {$job_id}", 'error' );
+				return true;
 			}
 
-			// Fallback to preview URL (may have watermark with /mixenhancepreview)
-			if ( isset( $data['download_url_preview_revived'] ) && ! empty( $data['download_url_preview_revived'] ) ) {
-				teknup_ai_mastering()->log( "Preview file available - using it", 'info' );
-				return $this->handle_success( $job_id, $data );
+			// Call /retrieveenhancedtrack to get the final paid version with stems
+			$final_data = $this->make_request(
+				'POST',
+				'/retrieveenhancedtrack',
+				array(
+					'mixReviveData' => array(
+						'mixReviveTaskId' => $tonn_task_id,
+					),
+				)
+			);
+
+			if ( is_wp_error( $final_data ) ) {
+				teknup_ai_mastering()->log( "Failed to retrieve final version for job {$job_id}: " . $final_data->get_error_message(), 'error' );
+				return true;
 			}
 
-			// No URL available yet
-			teknup_ai_mastering()->log( "No download URL available yet", 'warning' );
+			// Merge the results data into final_data for processing
+			if ( isset( $final_data['revivedTrackTaskResults'] ) ) {
+				$final_results = array_merge( $data, $final_data['revivedTrackTaskResults'] );
+				$final_results['mixrevive_task_id'] = $tonn_task_id; // Ensure task ID is preserved
+				return $this->handle_success( $job_id, $final_results );
+			}
+
+			teknup_ai_mastering()->log( "No revivedTrackTaskResults in final version response for job {$job_id}", 'error' );
 			return true;
 
 			// OLD CODE below (never executed) - kept for reference:
@@ -683,8 +700,7 @@ class Tonn {
 		}
 
 		$job = teknup_ai_mastering()->jobs->get_job( $job_id );
-		$settings = ! empty( $job->settings ) ? json_decode( $job->settings, true ) : array();
-		$job_type = isset( $settings['job_type'] ) ? $settings['job_type'] : 'mastering';
+		$job_type = ! empty( $job->job_type ) ? $job->job_type : 'mastering';
 
 		// Handle stems if they were requested (Tonn format with underscores)
 		$stems = null;
