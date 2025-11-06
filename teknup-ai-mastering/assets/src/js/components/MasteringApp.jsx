@@ -3,6 +3,7 @@ import Upload from './Upload';
 import Dashboard from './Dashboard';
 import Auth from './Auth';
 import NoSubscription from './NoSubscription';
+import ComingSoon from './ComingSoon';
 
 const MasteringApp = () => {
 	const [activeTab, setActiveTab] = useState('upload');
@@ -32,6 +33,22 @@ const MasteringApp = () => {
 					Mastering
 				</button>
 				<button
+					className={`teknup-tab ${activeTab === 'mix' ? 'active' : ''}`}
+					onClick={() => setActiveTab('mix')}
+				>
+					<span className="teknup-tab-icon">🎚️</span>
+					Mix
+					<span className="teknup-tab-badge">BETA</span>
+				</button>
+				<button
+					className={`teknup-tab ${activeTab === 'stems' ? 'active' : ''}`}
+					onClick={() => setActiveTab('stems')}
+				>
+					<span className="teknup-tab-icon">🎛️</span>
+					Stem Separation
+					<span className="teknup-tab-badge">BETA</span>
+				</button>
+				<button
 					className={`teknup-tab ${activeTab === 'dashboard' ? 'active' : ''}`}
 					onClick={() => setActiveTab('dashboard')}
 				>
@@ -43,6 +60,18 @@ const MasteringApp = () => {
 			{/* Tab Content */}
 			<div className="teknup-tab-content">
 				{activeTab === 'upload' && <Upload />}
+				{activeTab === 'mix' && (
+					<ComingSoon
+						title="Mix Multitrack"
+						description="Mixez vos pistes multipistes avec l'IA. Cette fonctionnalité avancée vous permettra de mixer automatiquement plusieurs pistes audio pour créer un mix professionnel optimisé pour la musique techno et électronique."
+					/>
+				)}
+				{activeTab === 'stems' && (
+					<ComingSoon
+						title="Stem Separation"
+						description="Séparez votre musique en stems individuels (vocals, drums, bass, other). Extrayez et téléchargez chaque élément de votre mix pour un contrôle total sur votre production."
+					/>
+				)}
 				{activeTab === 'dashboard' && <Dashboard />}
 			</div>
 		</div>

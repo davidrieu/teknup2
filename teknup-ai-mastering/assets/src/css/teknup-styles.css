@@ -991,3 +991,109 @@
 		min-width: 32px;
 	}
 }
+
+/* Beta Badge in Tabs */
+.teknup-tab-badge {
+	display: inline-block;
+	margin-left: 8px;
+	padding: 2px 8px;
+	font-size: 10px;
+	font-weight: bold;
+	background: var(--teknup-red);
+	color: var(--teknup-white);
+	border-radius: 10px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+/* Coming Soon Page */
+.teknup-coming-soon {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 500px;
+	padding: var(--teknup-spacing-xl);
+}
+
+.teknup-coming-soon-content {
+	max-width: 600px;
+	text-align: center;
+	background: var(--teknup-bg-card);
+	border: 1px solid var(--teknup-border);
+	border-radius: var(--teknup-radius-lg);
+	padding: var(--teknup-spacing-xxl);
+	box-shadow: var(--teknup-shadow-card);
+}
+
+.teknup-coming-soon-icon {
+	font-size: 80px;
+	display: block;
+	margin-bottom: var(--teknup-spacing-lg);
+}
+
+.teknup-coming-soon h2 {
+	color: var(--teknup-white);
+	font-size: 32px;
+	margin-bottom: var(--teknup-spacing-md);
+}
+
+.teknup-beta-badge {
+	display: inline-block;
+	padding: 8px 20px;
+	background: linear-gradient(135deg, var(--teknup-red-dark), var(--teknup-red));
+	color: var(--teknup-white);
+	font-weight: bold;
+	font-size: 14px;
+	border-radius: 20px;
+	margin-bottom: var(--teknup-spacing-lg);
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	box-shadow: 0 4px 15px rgba(220, 20, 60, 0.4);
+}
+
+.teknup-coming-soon-description {
+	color: var(--teknup-gray-light);
+	font-size: 16px;
+	line-height: 1.6;
+	margin-bottom: var(--teknup-spacing-xl);
+}
+
+.teknup-coming-soon-features {
+	text-align: left;
+	margin-bottom: var(--teknup-spacing-xl);
+	padding: var(--teknup-spacing-lg);
+	background: rgba(0, 0, 0, 0.3);
+	border-radius: var(--teknup-radius-md);
+}
+
+.teknup-coming-soon-features h3 {
+	color: var(--teknup-red-light);
+	font-size: 18px;
+	margin-bottom: var(--teknup-spacing-md);
+}
+
+.teknup-coming-soon-features ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.teknup-coming-soon-features li {
+	color: var(--teknup-gray-light);
+	padding: var(--teknup-spacing-sm) 0;
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.teknup-coming-soon-notify {
+	color: var(--teknup-gray);
+	font-size: 14px;
+	font-style: italic;
+	margin-top: var(--teknup-spacing-lg);
+	padding-top: var(--teknup-spacing-lg);
+	border-top: 1px solid var(--teknup-border);
+}
+
+.teknup-coming-soon-notify strong {
+	color: var(--teknup-red-light);
+}
