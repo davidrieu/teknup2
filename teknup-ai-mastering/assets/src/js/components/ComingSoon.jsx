@@ -8,19 +8,19 @@ const ComingSoon = ({ title, description }) => {
 				<h2 className="teknup-heading">{title}</h2>
 				<div className="teknup-beta-badge">BETA</div>
 				<p className="teknup-coming-soon-description">
-					{description || 'Cette fonctionnalité est actuellement en développement et sera bientôt disponible au public.'}
+					{description || 'This feature is currently in development and will be available to the public soon.'}
 				</p>
 				<div className="teknup-coming-soon-features">
-					<h3>Fonctionnalités à venir :</h3>
+					<h3>Upcoming Features:</h3>
 					<ul>
-						<li>✨ Interface intuitive et facile à utiliser</li>
-						<li>🎯 Traitement optimisé pour la musique techno</li>
-						<li>⚡ Résultats rapides et de haute qualité</li>
-						<li>🔒 Sécurisé et confidentiel</li>
+						<li>✨ Intuitive and easy-to-use interface</li>
+						<li>🎯 Optimized processing for techno music</li>
+						<li>⚡ Fast and high-quality results</li>
+						<li>🔒 Secure and confidential</li>
 					</ul>
 				</div>
 				<p className="teknup-coming-soon-notify">
-					<strong>Restez connecté !</strong> Nous vous informerons dès que cette fonctionnalité sera disponible.
+					<strong>Stay tuned!</strong> We'll notify you as soon as this feature is available.
 				</p>
 			</div>
 		</div>

@@ -63,13 +63,13 @@ const MasteringApp = () => {
 				{activeTab === 'mix' && (
 					<ComingSoon
 						title="Mix Multitrack"
-						description="Mixez vos pistes multipistes avec l'IA. Cette fonctionnalité avancée vous permettra de mixer automatiquement plusieurs pistes audio pour créer un mix professionnel optimisé pour la musique techno et électronique."
+						description="Mix your multitrack projects with AI. This advanced feature will allow you to automatically mix multiple audio tracks to create a professional mix optimized for techno and electronic music."
 					/>
 				)}
 				{activeTab === 'stems' && (
 					<ComingSoon
 						title="Stem Separation"
-						description="Séparez votre musique en stems individuels (vocals, drums, bass, other). Extrayez et téléchargez chaque élément de votre mix pour un contrôle total sur votre production."
+						description="Separate your music into individual stems (vocals, drums, bass, other). Extract and download each element of your mix for total control over your production."
 					/>
 				)}
 				{activeTab === 'dashboard' && <Dashboard />}
