@@ -8,9 +8,9 @@ const Upload = () => {
 	const [error, setError] = useState(null);
 	const [quota, setQuota] = useState(null);
 	const [settings, setSettings] = useState({
-		intensity: 'medium',
-		genre: '',
-		target_lufs: -14
+		intensity: 'high',
+		genre: 'techno',
+		target_lufs: -9
 	});
 
 	const fileInputRef = useRef(null);
@@ -209,19 +209,18 @@ const Upload = () => {
 							</div>
 
 							<div style={{ marginTop: '16px' }}>
-								<label className="teknup-label">Genre (Optional)</label>
+								<label className="teknup-label">Techno Style</label>
 								<select
 									className="teknup-select"
 									value={settings.genre}
 									onChange={(e) => setSettings({ ...settings, genre: e.target.value })}
 								>
-									<option value="">Auto Detect</option>
 									<option value="techno">Techno</option>
-									<option value="house">House</option>
-									<option value="trance">Trance</option>
-									<option value="dubstep">Dubstep</option>
-									<option value="drum_and_bass">Drum & Bass</option>
-									<option value="ambient">Ambient</option>
+									<option value="minimal_techno">Minimal Techno</option>
+									<option value="hard_techno">Hard Techno</option>
+									<option value="industrial_techno">Industrial Techno</option>
+									<option value="melodic_techno">Melodic Techno</option>
+									<option value="acid_techno">Acid Techno</option>
 								</select>
 							</div>
 
@@ -237,7 +236,7 @@ const Upload = () => {
 									step="0.1"
 								/>
 								<p className="teknup-text-secondary" style={{ marginTop: '8px' }}>
-									Recommended: -14 for streaming, -9 for clubs
+									Club standard: -9 LUFS (recommended for techno), Streaming: -14 LUFS
 								</p>
 							</div>
 

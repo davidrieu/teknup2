@@ -201,53 +201,45 @@ class Tonn {
 
 	/**
 	 * Map frontend genre to Tonn musicalStyle
+	 * This plugin is specialized for techno music mastering.
 	 *
 	 * @param string $genre Genre from frontend.
 	 * @return string Tonn musicalStyle.
 	 */
 	private function map_genre_to_musical_style( $genre ) {
+		// All techno sub-genres map to ELECTRONIC for optimal processing
 		$genre_map = array(
-			'techno'         => 'ELECTRONIC',
-			'house'          => 'ELECTRONIC',
-			'trance'         => 'ELECTRONIC',
-			'dubstep'        => 'ELECTRONIC',
-			'drum_and_bass'  => 'ELECTRONIC',
-			'ambient'        => 'ELECTRONIC',
-			'electronic'     => 'ELECTRONIC',
-			'edm'            => 'ELECTRONIC',
-			'pop'            => 'POP',
-			'rock'           => 'ROCK',
-			'indie'          => 'ROCK_INDIE',
-			'rock_indie'     => 'ROCK_INDIE',
-			'hip_hop'        => 'HIPHOP_GRIME',
-			'hiphop'         => 'HIPHOP_GRIME',
-			'hip-hop'        => 'HIPHOP_GRIME',
-			'rap'            => 'HIPHOP_GRIME',
-			'grime'          => 'HIPHOP_GRIME',
+			'techno'             => 'ELECTRONIC',
+			'minimal_techno'     => 'ELECTRONIC',
+			'hard_techno'        => 'ELECTRONIC',
+			'industrial_techno'  => 'ELECTRONIC',
+			'melodic_techno'     => 'ELECTRONIC',
+			'acid_techno'        => 'ELECTRONIC',
 		);
 
 		// Normalize genre to lowercase
 		$normalized_genre = strtolower( trim( $genre ) );
 
-		// Return mapped value or default to POP
-		return isset( $genre_map[ $normalized_genre ] ) ? $genre_map[ $normalized_genre ] : 'POP';
+		// Default to ELECTRONIC (techno) if genre is empty or not recognized
+		return isset( $genre_map[ $normalized_genre ] ) ? $genre_map[ $normalized_genre ] : 'ELECTRONIC';
 	}
 
 	/**
 	 * Map target LUFS to loudness preference
+	 * Optimized for techno club music (-9 LUFS standard).
 	 *
 	 * @param float|null $target_lufs Target LUFS value.
 	 * @return string Tonn loudnessPreference.
 	 */
 	private function map_lufs_to_loudness_preference( $target_lufs ) {
-		// If no target specified, use streaming standard
+		// If no target specified, use club standard (CD_LOUDNESS) for techno
 		if ( empty( $target_lufs ) ) {
-			return 'STREAMING_LOUDNESS';
+			return 'CD_LOUDNESS';
 		}
 
 		// Convert LUFS to loudness preference
-		// Streaming standard is around -14 LUFS
-		// CD standard is around -9 LUFS (louder)
+		// Club/Techno standard is around -9 LUFS (CD_LOUDNESS)
+		// Streaming standard is around -14 LUFS (STREAMING_LOUDNESS)
 		if ( $target_lufs >= -11 ) {
 			return 'CD_LOUDNESS';
 		} else {
@@ -257,7 +249,7 @@ class Tonn {
 
 	/**
 	 * Map intensity to mastering aggressiveness
-	 * Note: Intensity affects how aggressive the fixes are
+	 * Optimized for techno club music - high intensity is recommended.
 	 *
 	 * @param string $intensity Intensity level (low, medium, high).
 	 * @return array Array of fix settings based on intensity.
@@ -276,8 +268,8 @@ class Tonn {
 					'fixLoudnessIssues'      => true,
 					'applyMastering'         => true,
 				);
-			case 'high':
-				// Aggressive processing - fix everything
+			case 'medium':
+				// Balanced processing - fix most issues
 				return array(
 					'fixClippingIssues'      => true,
 					'fixDRCIssues'           => true,
@@ -286,9 +278,9 @@ class Tonn {
 					'fixLoudnessIssues'      => true,
 					'applyMastering'         => true,
 				);
-			case 'medium':
+			case 'high':
 			default:
-				// Balanced processing - fix most issues
+				// Aggressive processing - fix everything (recommended for techno)
 				return array(
 					'fixClippingIssues'      => true,
 					'fixDRCIssues'           => true,

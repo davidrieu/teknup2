@@ -283,10 +283,10 @@ class REST {
 
 		$file = $files['file'];
 
-		// Get parameters
-		$intensity = sanitize_text_field( $request->get_param( 'intensity' ) ?: 'medium' );
-		$genre = sanitize_text_field( $request->get_param( 'genre' ) ?: null );
-		$target_lufs = $request->get_param( 'target_lufs' ) ? (float) $request->get_param( 'target_lufs' ) : null;
+		// Get parameters with techno-optimized defaults
+		$intensity = sanitize_text_field( $request->get_param( 'intensity' ) ?: 'high' );
+		$genre = sanitize_text_field( $request->get_param( 'genre' ) ?: 'techno' );
+		$target_lufs = $request->get_param( 'target_lufs' ) ? (float) $request->get_param( 'target_lufs' ) : -9.0;
 
 		// Create job first (to get job ID)
 		$job_id = teknup_ai_mastering()->jobs->create_job(
