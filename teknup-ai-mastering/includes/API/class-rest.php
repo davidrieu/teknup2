@@ -287,6 +287,12 @@ class REST {
 		$intensity = sanitize_text_field( $request->get_param( 'intensity' ) ?: 'high' );
 		$genre = sanitize_text_field( $request->get_param( 'genre' ) ?: 'techno' );
 		$target_lufs = $request->get_param( 'target_lufs' ) ? (float) $request->get_param( 'target_lufs' ) : -9.0;
+		$job_type = sanitize_text_field( $request->get_param( 'job_type' ) ?: 'mastering' );
+
+		// Prepare job settings
+		$settings = array(
+			'job_type' => $job_type,
+		);
 
 		// Create job first (to get job ID)
 		$job_id = teknup_ai_mastering()->jobs->create_job(
@@ -299,6 +305,7 @@ class REST {
 				'intensity' => $intensity,
 				'genre' => $genre,
 				'target_lufs' => $target_lufs,
+				'settings' => json_encode( $settings ),
 			)
 		);
 

@@ -347,30 +347,42 @@ class Tonn {
 	 * @return array|WP_Error Response or error.
 	 */
 	private function submit_mix_enhance_with_stems( $job_id, $audio_url, $job ) {
-		$settings = ! empty( $job->settings ) ? json_decode( $job->settings, true ) : array();
-
 		$webhook_url = rest_url( 'teknup/v1/tonn/callback' );
 
-		// Mix Revive + Stem Processing
+		// Get user parameters from job
+		$genre = ! empty( $job->genre ) ? $job->genre : '';
+		$intensity = ! empty( $job->intensity ) ? $job->intensity : 'high';
+		$target_lufs = ! empty( $job->target_lufs ) ? (float) $job->target_lufs : null;
+
+		// Map frontend parameters to Tonn API parameters
+		$musical_style = $this->map_genre_to_musical_style( $genre );
+		$loudness_preference = $this->map_lufs_to_loudness_preference( $target_lufs );
+		$intensity_settings = $this->map_intensity_to_settings( $intensity );
+
+		teknup_ai_mastering()->log( "Submitting PREVIEW stem separation job {$job_id} (free with watermark) with user parameters: genre={$genre}, intensity={$intensity}, target_lufs={$target_lufs}", 'info' );
+		teknup_ai_mastering()->log( "Mapped to Tonn parameters: musicalStyle={$musical_style}, loudnessPreference={$loudness_preference}", 'info' );
+		teknup_ai_mastering()->log( "Webhook URL: {$webhook_url}", 'debug' );
+
+		// Mix Revive + Stem Processing for PREVIEW mode
 		$body = array(
 			'mixReviveData' => array(
-				'audioFileLocation' => $audio_url,
-				'musicalStyle' => isset( $settings['musical_style'] ) ? strtoupper( $settings['musical_style'] ) : 'POP',
-				'isMaster' => isset( $settings['is_master'] ) ? (bool) $settings['is_master'] : false,
-				'fixClippingIssues' => isset( $settings['fix_clipping'] ) ? (bool) $settings['fix_clipping'] : true,
-				'fixDRCIssues' => isset( $settings['fix_drc'] ) ? (bool) $settings['fix_drc'] : true,
-				'fixStereoWidthIssues' => isset( $settings['fix_stereo_width'] ) ? (bool) $settings['fix_stereo_width'] : true,
-				'fixTonalProfileIssues' => isset( $settings['fix_tonal_profile'] ) ? (bool) $settings['fix_tonal_profile'] : true,
-				'fixLoudnessIssues' => isset( $settings['fix_loudness'] ) ? (bool) $settings['fix_loudness'] : true,
-				'applyMastering' => isset( $settings['apply_mastering'] ) ? (bool) $settings['apply_mastering'] : true,
-				'loudnessPreference' => isset( $settings['loudness_preference'] ) ? $settings['loudness_preference'] : 'STREAMING_LOUDNESS',
-				'stemProcessing' => true, // Enable stem separation
-				'getProcessedStems' => true, // Get processed stems
-				'webhookURL' => $webhook_url,
+				'audioFileLocation'      => $audio_url,
+				'musicalStyle'           => $musical_style,
+				'isMaster'               => false, // Assume input is not mastered
+				'fixClippingIssues'      => $intensity_settings['fixClippingIssues'],
+				'fixDRCIssues'           => $intensity_settings['fixDRCIssues'],
+				'fixStereoWidthIssues'   => $intensity_settings['fixStereoWidthIssues'],
+				'fixTonalProfileIssues'  => $intensity_settings['fixTonalProfileIssues'],
+				'fixLoudnessIssues'      => $intensity_settings['fixLoudnessIssues'],
+				'applyMastering'         => $intensity_settings['applyMastering'],
+				'loudnessPreference'     => $loudness_preference,
+				'stemProcessing'         => true, // Enable stem separation
+				'getProcessedStems'      => true, // Get processed stems
+				'webhookURL'             => $webhook_url,
 			),
 		);
 
-		return $this->make_request( 'POST', '/mixenhance', $body );
+		return $this->make_request( 'POST', '/mixenhancepreview', $body );
 	}
 
 	/**

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Upload from './Upload';
+import StemSeparation from './StemSeparation';
 import Dashboard from './Dashboard';
 import Auth from './Auth';
 import NoSubscription from './NoSubscription';
@@ -29,7 +30,14 @@ const MasteringApp = () => {
 					onClick={() => setActiveTab('upload')}
 				>
 					<span className="teknup-tab-icon">🎵</span>
-					Upload Track
+					Mastering
+				</button>
+				<button
+					className={`teknup-tab ${activeTab === 'stems' ? 'active' : ''}`}
+					onClick={() => setActiveTab('stems')}
+				>
+					<span className="teknup-tab-icon">🎛️</span>
+					Stem Separation
 				</button>
 				<button
 					className={`teknup-tab ${activeTab === 'dashboard' ? 'active' : ''}`}
@@ -43,6 +51,7 @@ const MasteringApp = () => {
 			{/* Tab Content */}
 			<div className="teknup-tab-content">
 				{activeTab === 'upload' && <Upload />}
+				{activeTab === 'stems' && <StemSeparation />}
 				{activeTab === 'dashboard' && <Dashboard />}
 			</div>
 		</div>

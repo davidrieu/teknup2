@@ -246,6 +246,20 @@ class Jobs {
 			return null;
 		}
 
+		// Parse stems data if available
+		$stems = array();
+		if ( ! empty( $job->stems_data ) ) {
+			$stems_data = json_decode( $job->stems_data, true );
+			if ( is_array( $stems_data ) ) {
+				foreach ( $stems_data as $stem_name => $stem_path ) {
+					$stems[] = array(
+						'name' => ucfirst( str_replace( '_', ' ', $stem_name ) ),
+						'token' => teknup_ai_mastering()->storage->generate_download_token( $job->id, $stem_name ),
+					);
+				}
+			}
+		}
+
 		return array(
 			'id' => (int) $job->id,
 			'status' => $job->status,
@@ -260,6 +274,10 @@ class Jobs {
 			'download_url' => $job->status === 'completed' && $job->mastered_filepath
 				? teknup_ai_mastering()->storage->generate_download_url( $job->id, 'mastered' )
 				: null,
+			'download_token' => $job->status === 'completed' && $job->mastered_filepath
+				? teknup_ai_mastering()->storage->generate_download_token( $job->id, 'mastered' )
+				: null,
+			'stems' => $stems,
 			'processing_time' => $this->calculate_processing_time( $job ),
 		);
 	}
