@@ -200,6 +200,107 @@ class Tonn {
 	}
 
 	/**
+	 * Map frontend genre to Tonn musicalStyle
+	 *
+	 * @param string $genre Genre from frontend.
+	 * @return string Tonn musicalStyle.
+	 */
+	private function map_genre_to_musical_style( $genre ) {
+		$genre_map = array(
+			'techno'         => 'ELECTRONIC',
+			'house'          => 'ELECTRONIC',
+			'trance'         => 'ELECTRONIC',
+			'dubstep'        => 'ELECTRONIC',
+			'drum_and_bass'  => 'ELECTRONIC',
+			'ambient'        => 'ELECTRONIC',
+			'electronic'     => 'ELECTRONIC',
+			'edm'            => 'ELECTRONIC',
+			'pop'            => 'POP',
+			'rock'           => 'ROCK',
+			'indie'          => 'ROCK_INDIE',
+			'rock_indie'     => 'ROCK_INDIE',
+			'hip_hop'        => 'HIPHOP_GRIME',
+			'hiphop'         => 'HIPHOP_GRIME',
+			'hip-hop'        => 'HIPHOP_GRIME',
+			'rap'            => 'HIPHOP_GRIME',
+			'grime'          => 'HIPHOP_GRIME',
+		);
+
+		// Normalize genre to lowercase
+		$normalized_genre = strtolower( trim( $genre ) );
+
+		// Return mapped value or default to POP
+		return isset( $genre_map[ $normalized_genre ] ) ? $genre_map[ $normalized_genre ] : 'POP';
+	}
+
+	/**
+	 * Map target LUFS to loudness preference
+	 *
+	 * @param float|null $target_lufs Target LUFS value.
+	 * @return string Tonn loudnessPreference.
+	 */
+	private function map_lufs_to_loudness_preference( $target_lufs ) {
+		// If no target specified, use streaming standard
+		if ( empty( $target_lufs ) ) {
+			return 'STREAMING_LOUDNESS';
+		}
+
+		// Convert LUFS to loudness preference
+		// Streaming standard is around -14 LUFS
+		// CD standard is around -9 LUFS (louder)
+		if ( $target_lufs >= -11 ) {
+			return 'CD_LOUDNESS';
+		} else {
+			return 'STREAMING_LOUDNESS';
+		}
+	}
+
+	/**
+	 * Map intensity to mastering aggressiveness
+	 * Note: Intensity affects how aggressive the fixes are
+	 *
+	 * @param string $intensity Intensity level (low, medium, high).
+	 * @return array Array of fix settings based on intensity.
+	 */
+	private function map_intensity_to_settings( $intensity ) {
+		$intensity = strtolower( trim( $intensity ) );
+
+		switch ( $intensity ) {
+			case 'low':
+				// Minimal processing - only fix critical issues
+				return array(
+					'fixClippingIssues'      => true,
+					'fixDRCIssues'           => false,
+					'fixStereoWidthIssues'   => false,
+					'fixTonalProfileIssues'  => false,
+					'fixLoudnessIssues'      => true,
+					'applyMastering'         => true,
+				);
+			case 'high':
+				// Aggressive processing - fix everything
+				return array(
+					'fixClippingIssues'      => true,
+					'fixDRCIssues'           => true,
+					'fixStereoWidthIssues'   => true,
+					'fixTonalProfileIssues'  => true,
+					'fixLoudnessIssues'      => true,
+					'applyMastering'         => true,
+				);
+			case 'medium':
+			default:
+				// Balanced processing - fix most issues
+				return array(
+					'fixClippingIssues'      => true,
+					'fixDRCIssues'           => true,
+					'fixStereoWidthIssues'   => true,
+					'fixTonalProfileIssues'  => true,
+					'fixLoudnessIssues'      => true,
+					'applyMastering'         => true,
+				);
+		}
+	}
+
+	/**
 	 * Submit mix revive job (mastering)
 	 *
 	 * @param int    $job_id Job ID.
@@ -208,27 +309,37 @@ class Tonn {
 	 * @return array|WP_Error Response or error.
 	 */
 	private function submit_mix_enhance( $job_id, $audio_url, $job ) {
-		$settings = ! empty( $job->settings ) ? json_decode( $job->settings, true ) : array();
-
 		$webhook_url = rest_url( 'teknup/v1/tonn/callback' );
 
+		// Get user parameters from job
+		$genre = ! empty( $job->genre ) ? $job->genre : '';
+		$intensity = ! empty( $job->intensity ) ? $job->intensity : 'medium';
+		$target_lufs = ! empty( $job->target_lufs ) ? (float) $job->target_lufs : null;
+
+		// Map frontend parameters to Tonn API parameters
+		$musical_style = $this->map_genre_to_musical_style( $genre );
+		$loudness_preference = $this->map_lufs_to_loudness_preference( $target_lufs );
+		$intensity_settings = $this->map_intensity_to_settings( $intensity );
+
+		teknup_ai_mastering()->log( "Submitting job {$job_id} with user parameters: genre={$genre}, intensity={$intensity}, target_lufs={$target_lufs}", 'info' );
+		teknup_ai_mastering()->log( "Mapped to Tonn parameters: musicalStyle={$musical_style}, loudnessPreference={$loudness_preference}", 'info' );
 		teknup_ai_mastering()->log( "Webhook URL: {$webhook_url}", 'debug' );
 
 		// Prepare mix revive parameters (mastering)
 		$body = array(
 			'mixReviveData' => array(
-				'audioFileLocation' => $audio_url,
-				'musicalStyle' => isset( $settings['musical_style'] ) ? strtoupper( $settings['musical_style'] ) : 'POP',
-				'isMaster' => isset( $settings['is_master'] ) ? (bool) $settings['is_master'] : false,
-				'fixClippingIssues' => isset( $settings['fix_clipping'] ) ? (bool) $settings['fix_clipping'] : true,
-				'fixDRCIssues' => isset( $settings['fix_drc'] ) ? (bool) $settings['fix_drc'] : true,
-				'fixStereoWidthIssues' => isset( $settings['fix_stereo_width'] ) ? (bool) $settings['fix_stereo_width'] : true,
-				'fixTonalProfileIssues' => isset( $settings['fix_tonal_profile'] ) ? (bool) $settings['fix_tonal_profile'] : true,
-				'fixLoudnessIssues' => isset( $settings['fix_loudness'] ) ? (bool) $settings['fix_loudness'] : true,
-				'applyMastering' => isset( $settings['apply_mastering'] ) ? (bool) $settings['apply_mastering'] : true,
-				'loudnessPreference' => isset( $settings['loudness_preference'] ) ? $settings['loudness_preference'] : 'STREAMING_LOUDNESS',
-				'stemProcessing' => false, // No stems for basic mastering
-				'webhookURL' => $webhook_url,
+				'audioFileLocation'      => $audio_url,
+				'musicalStyle'           => $musical_style,
+				'isMaster'               => false, // Assume input is not mastered
+				'fixClippingIssues'      => $intensity_settings['fixClippingIssues'],
+				'fixDRCIssues'           => $intensity_settings['fixDRCIssues'],
+				'fixStereoWidthIssues'   => $intensity_settings['fixStereoWidthIssues'],
+				'fixTonalProfileIssues'  => $intensity_settings['fixTonalProfileIssues'],
+				'fixLoudnessIssues'      => $intensity_settings['fixLoudnessIssues'],
+				'applyMastering'         => $intensity_settings['applyMastering'],
+				'loudnessPreference'     => $loudness_preference,
+				'stemProcessing'         => false, // No stems for basic mastering
+				'webhookURL'             => $webhook_url,
 			),
 		);
 
