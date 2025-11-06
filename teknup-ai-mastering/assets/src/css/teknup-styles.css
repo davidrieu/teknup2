@@ -1,20 +1,23 @@
 /**
  * Teknup AI Mastering Styles
- * Design system: Dark theme with red accents
+ * Design system matching main website: Dark theme with red accents and glassmorphism
  */
 
 :root {
-	/* Colors */
-	--teknup-red-dark: #8B0000;
-	--teknup-red: #DC143C;
-	--teknup-red-light: #FF6B6B;
+	/* Primary Colors - matching website */
+	--primary: #9d2c20;
+	--secondary: #ad1831;
+	--accent: #c92a2a;
+
+	/* Grays */
 	--teknup-white: #FFFFFF;
 	--teknup-gray-light: #CCCCCC;
 	--teknup-gray: #999999;
 	--teknup-gray-dark: #666666;
 	--teknup-bg-dark: #0A0A0A;
+	--teknup-bg-darker: #050505;
 	--teknup-bg-card: rgba(255, 255, 255, 0.05);
-	--teknup-border: rgba(220, 20, 60, 0.3);
+	--teknup-border: rgba(157, 44, 32, 0.3);
 
 	/* Spacing */
 	--teknup-spacing-xs: 4px;
@@ -28,10 +31,13 @@
 	--teknup-radius-sm: 4px;
 	--teknup-radius-md: 8px;
 	--teknup-radius-lg: 12px;
+	--teknup-radius-xl: 20px;
 
-	/* Shadows */
-	--teknup-shadow-glow: 0 0 20px rgba(220, 20, 60, 0.3);
+	/* Shadows with new colors */
+	--teknup-shadow-glow: 0 0 20px rgba(157, 44, 32, 0.4);
+	--teknup-shadow-glow-lg: 0 0 40px rgba(157, 44, 32, 0.5);
 	--teknup-shadow-card: 0 4px 15px rgba(0, 0, 0, 0.5);
+	--teknup-shadow-elevated: 0 10px 40px rgba(0, 0, 0, 0.7);
 }
 
 /* General Styles */
@@ -43,31 +49,35 @@
 	min-height: 500px;
 }
 
-/* Cards */
+/* Cards with enhanced glassmorphism */
 .teknup-card {
-	background: var(--teknup-bg-card);
+	background: rgba(157, 44, 32, 0.05);
 	border: 1px solid var(--teknup-border);
 	border-radius: var(--teknup-radius-lg);
 	padding: var(--teknup-spacing-lg);
 	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
 	transition: all 0.3s ease;
+	box-shadow: var(--teknup-shadow-card);
 }
 
 .teknup-card:hover {
-	border-color: var(--teknup-red);
+	border-color: var(--primary);
 	box-shadow: var(--teknup-shadow-glow);
+	transform: translateY(-2px);
 }
 
 /* Glass morphism effect */
 .teknup-glass {
 	background: rgba(255, 255, 255, 0.05);
 	backdrop-filter: blur(10px);
-	border: 1px solid rgba(220, 20, 60, 0.2);
+	-webkit-backdrop-filter: blur(10px);
+	border: 1px solid rgba(157, 44, 32, 0.2);
 }
 
-/* Buttons */
+/* Buttons with gradient matching website */
 .teknup-button {
-	background: linear-gradient(135deg, var(--teknup-red) 0%, var(--teknup-red-dark) 100%);
+	background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
 	color: var(--teknup-white);
 	border: none;
 	padding: var(--teknup-spacing-md) var(--teknup-spacing-xl);
@@ -78,6 +88,23 @@
 	cursor: pointer;
 	transition: all 0.3s ease;
 	box-shadow: var(--teknup-shadow-card);
+	position: relative;
+	overflow: hidden;
+}
+
+.teknup-button::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: -100%;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+	transition: left 0.5s ease;
+}
+
+.teknup-button:hover::before {
+	left: 100%;
 }
 
 .teknup-button:hover {
@@ -93,16 +120,17 @@
 
 .teknup-button-secondary {
 	background: transparent;
-	border: 1px solid var(--teknup-red);
-	color: var(--teknup-red);
+	border: 1px solid var(--primary);
+	color: var(--primary);
 }
 
 .teknup-button-secondary:hover {
-	background: var(--teknup-red);
+	background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
 	color: var(--teknup-white);
+	border-color: var(--secondary);
 }
 
-/* Upload Zone */
+/* Upload Zone with floating animation */
 .teknup-upload-zone {
 	border: 2px dashed var(--teknup-border);
 	border-radius: var(--teknup-radius-lg);
@@ -110,19 +138,42 @@
 	text-align: center;
 	transition: all 0.3s ease;
 	cursor: pointer;
-	background: var(--teknup-bg-card);
+	background: rgba(157, 44, 32, 0.03);
+	backdrop-filter: blur(5px);
+	-webkit-backdrop-filter: blur(5px);
+	position: relative;
+}
+
+.teknup-upload-zone::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: var(--teknup-radius-lg);
+	padding: 2px;
+	background: linear-gradient(135deg, var(--primary), var(--secondary));
+	-webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+	-webkit-mask-composite: xor;
+	mask-composite: exclude;
+	opacity: 0;
+	transition: opacity 0.3s ease;
 }
 
 .teknup-upload-zone:hover,
 .teknup-upload-zone.drag-over {
-	border-color: var(--teknup-red);
-	background: rgba(220, 20, 60, 0.1);
+	border-color: var(--primary);
+	background: rgba(157, 44, 32, 0.1);
+	box-shadow: var(--teknup-shadow-glow);
+}
+
+.teknup-upload-zone:hover::before {
+	opacity: 1;
 }
 
 .teknup-upload-icon {
 	font-size: 48px;
 	margin-bottom: var(--teknup-spacing-md);
-	color: var(--teknup-red);
+	color: var(--primary);
+	animation: float 3s ease-in-out infinite;
 }
 
 /* Progress Bar */
@@ -137,9 +188,22 @@
 
 .teknup-progress-fill {
 	height: 100%;
-	background: linear-gradient(90deg, var(--teknup-red) 0%, var(--teknup-red-light) 100%);
+	background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
 	transition: width 0.3s ease;
-	box-shadow: 0 0 10px var(--teknup-red);
+	box-shadow: 0 0 10px var(--primary);
+	position: relative;
+	overflow: hidden;
+}
+
+.teknup-progress-fill::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+	animation: shimmer 2s infinite;
 }
 
 /* Status Badges */
@@ -151,6 +215,8 @@
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
+	backdrop-filter: blur(5px);
+	-webkit-backdrop-filter: blur(5px);
 }
 
 .teknup-status-pending {
@@ -165,6 +231,7 @@
 	background: rgba(33, 150, 243, 0.2);
 	color: #2196F3;
 	border: 1px solid rgba(33, 150, 243, 0.5);
+	animation: pulse 2s ease-in-out infinite;
 }
 
 .teknup-status-completed {
@@ -186,6 +253,10 @@
 	letter-spacing: 2px;
 	font-weight: 700;
 	margin-bottom: var(--teknup-spacing-lg);
+	background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
 }
 
 .teknup-text {
@@ -209,13 +280,16 @@
 	width: 100%;
 	font-size: 14px;
 	transition: all 0.3s ease;
+	backdrop-filter: blur(5px);
+	-webkit-backdrop-filter: blur(5px);
 }
 
 .teknup-input:focus,
 .teknup-select:focus {
 	outline: none;
-	border-color: var(--teknup-red);
-	box-shadow: 0 0 0 2px rgba(220, 20, 60, 0.2);
+	border-color: var(--primary);
+	box-shadow: 0 0 0 2px rgba(157, 44, 32, 0.2);
+	background: rgba(255, 255, 255, 0.08);
 }
 
 .teknup-label {
@@ -230,10 +304,13 @@
 
 /* Audio Player */
 .teknup-audio-player {
-	background: var(--teknup-glass);
+	background: rgba(157, 44, 32, 0.05);
+	border: 1px solid var(--teknup-border);
 	border-radius: var(--teknup-radius-lg);
 	padding: var(--teknup-spacing-lg);
 	margin: var(--teknup-spacing-lg) 0;
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
 }
 
 .teknup-audio-controls {
@@ -247,7 +324,7 @@
 	width: 48px;
 	height: 48px;
 	border-radius: 50%;
-	background: var(--teknup-red);
+	background: linear-gradient(135deg, var(--primary), var(--secondary));
 	border: none;
 	color: var(--teknup-white);
 	font-size: 20px;
@@ -256,6 +333,7 @@
 	align-items: center;
 	justify-content: center;
 	transition: all 0.3s ease;
+	box-shadow: var(--teknup-shadow-card);
 }
 
 .teknup-play-button:hover {
@@ -274,9 +352,10 @@
 
 .teknup-timeline-progress {
 	height: 100%;
-	background: var(--teknup-red);
+	background: linear-gradient(90deg, var(--primary), var(--secondary));
 	border-radius: var(--teknup-radius-md);
 	position: relative;
+	box-shadow: 0 0 10px var(--primary);
 }
 
 /* Stats Dashboard */
@@ -288,22 +367,29 @@
 }
 
 .teknup-stat-card {
-	background: var(--teknup-glass);
+	background: rgba(157, 44, 32, 0.05);
 	padding: var(--teknup-spacing-lg);
 	border-radius: var(--teknup-radius-lg);
 	border: 1px solid var(--teknup-border);
 	transition: all 0.3s ease;
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	box-shadow: var(--teknup-shadow-card);
 }
 
 .teknup-stat-card:hover {
-	border-color: var(--teknup-red);
+	border-color: var(--primary);
 	box-shadow: var(--teknup-shadow-glow);
+	transform: translateY(-2px);
 }
 
 .teknup-stat-value {
 	font-size: 36px;
 	font-weight: 700;
-	color: var(--teknup-red);
+	background: linear-gradient(135deg, var(--primary), var(--secondary));
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
 	margin-bottom: var(--teknup-spacing-sm);
 }
 
@@ -316,9 +402,12 @@
 
 /* Jobs List */
 .teknup-jobs-list {
-	background: var(--teknup-glass);
+	background: rgba(157, 44, 32, 0.03);
+	border: 1px solid var(--teknup-border);
 	border-radius: var(--teknup-radius-lg);
 	overflow: hidden;
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
 }
 
 .teknup-job-item {
@@ -328,7 +417,7 @@
 }
 
 .teknup-job-item:hover {
-	background: rgba(220, 20, 60, 0.05);
+	background: rgba(157, 44, 32, 0.1);
 }
 
 .teknup-job-item:last-child {
@@ -364,7 +453,7 @@
 /* Loading Spinner */
 .teknup-spinner {
 	border: 3px solid rgba(255, 255, 255, 0.1);
-	border-top-color: var(--teknup-red);
+	border-top-color: var(--primary);
 	border-radius: 50%;
 	width: 40px;
 	height: 40px;
@@ -372,64 +461,18 @@
 	margin: var(--teknup-spacing-lg) auto;
 }
 
-@keyframes teknup-spin {
-	to { transform: rotate(360deg); }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-	.teknup-stats-grid {
-		grid-template-columns: 1fr;
-	}
-
-	.teknup-job-header {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: var(--teknup-spacing-sm);
-	}
-
-	.teknup-job-meta {
-		flex-direction: column;
-		gap: var(--teknup-spacing-xs);
-	}
-}
-
-/* Admin Dashboard Specific Styles */
-.teknup-dashboard .teknup-stats-cards {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-	gap: var(--teknup-spacing-lg);
-	margin-bottom: var(--teknup-spacing-xl);
-}
-
-.teknup-dashboard .teknup-stat-card {
-	display: flex;
-	align-items: center;
-	gap: var(--teknup-spacing-md);
-}
-
-.teknup-dashboard .teknup-stat-icon {
-	font-size: 32px;
-}
-
-.teknup-dashboard .teknup-chart-container {
-	background: white;
-	padding: var(--teknup-spacing-lg);
-	border-radius: var(--teknup-radius-md);
-	margin-bottom: var(--teknup-spacing-xl);
-}
-
-.teknup-dashboard .teknup-chart-container canvas {
-	max-height: 300px;
-}
-
-/* Tabs */
+/* Tabs with enhanced effects */
 .teknup-tabs {
 	display: flex;
 	gap: var(--teknup-spacing-md);
 	margin-bottom: var(--teknup-spacing-xl);
 	border-bottom: 2px solid var(--teknup-border);
 	padding-bottom: var(--teknup-spacing-sm);
+	background: rgba(157, 44, 32, 0.02);
+	backdrop-filter: blur(5px);
+	-webkit-backdrop-filter: blur(5px);
+	border-radius: var(--teknup-radius-md) var(--teknup-radius-md) 0 0;
+	padding: var(--teknup-spacing-md);
 }
 
 .teknup-tab {
@@ -447,25 +490,28 @@
 	display: flex;
 	align-items: center;
 	gap: var(--teknup-spacing-sm);
+	border-radius: var(--teknup-radius-md);
 }
 
 .teknup-tab:hover {
-	color: var(--teknup-red-light);
+	color: var(--primary);
+	background: rgba(157, 44, 32, 0.1);
 }
 
 .teknup-tab.active {
-	color: var(--teknup-red);
+	color: var(--teknup-white);
+	background: linear-gradient(135deg, rgba(157, 44, 32, 0.3), rgba(173, 24, 49, 0.3));
 }
 
 .teknup-tab.active::after {
 	content: '';
 	position: absolute;
-	bottom: -10px;
+	bottom: -18px;
 	left: 0;
 	right: 0;
 	height: 2px;
-	background: linear-gradient(90deg, var(--teknup-red) 0%, var(--teknup-red-light) 100%);
-	box-shadow: 0 0 10px var(--teknup-red);
+	background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+	box-shadow: 0 0 10px var(--primary);
 }
 
 .teknup-tab-icon {
@@ -481,22 +527,6 @@
 	background: var(--teknup-bg-dark);
 	padding: var(--teknup-spacing-lg);
 	min-height: 500px;
-}
-
-/* Animations */
-@keyframes teknup-fade-in {
-	from {
-		opacity: 0;
-		transform: translateY(20px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
-
-.teknup-fade-in {
-	animation: teknup-fade-in 0.5s ease;
 }
 
 /* Authentication Container */
@@ -519,7 +549,7 @@
 	text-transform: uppercase;
 	letter-spacing: 2px;
 	margin-bottom: var(--teknup-spacing-sm);
-	background: linear-gradient(135deg, var(--teknup-red) 0%, var(--teknup-red-light) 100%);
+	background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 	background-clip: text;
@@ -552,14 +582,17 @@
 	letter-spacing: 1px;
 	transition: all 0.3s ease;
 	position: relative;
+	border-radius: var(--teknup-radius-md);
 }
 
 .teknup-auth-tab:hover {
-	color: var(--teknup-red-light);
+	color: var(--primary);
+	background: rgba(157, 44, 32, 0.1);
 }
 
 .teknup-auth-tab.active {
-	color: var(--teknup-red);
+	color: var(--teknup-white);
+	background: linear-gradient(135deg, rgba(157, 44, 32, 0.3), rgba(173, 24, 49, 0.3));
 }
 
 .teknup-auth-tab.active::after {
@@ -569,17 +602,18 @@
 	left: 0;
 	right: 0;
 	height: 2px;
-	background: linear-gradient(90deg, var(--teknup-red) 0%, var(--teknup-red-light) 100%);
-	box-shadow: 0 0 10px var(--teknup-red);
+	background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+	box-shadow: 0 0 10px var(--primary);
 }
 
 /* Auth Content */
 .teknup-auth-content {
-	background: var(--teknup-bg-card);
+	background: rgba(157, 44, 32, 0.05);
 	border: 1px solid var(--teknup-border);
 	border-radius: var(--teknup-radius-lg);
 	padding: var(--teknup-spacing-xl);
 	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
 }
 
 /* Auth Form */
@@ -625,14 +659,14 @@
 }
 
 .teknup-auth-footer a {
-	color: var(--teknup-red);
+	color: var(--primary);
 	text-decoration: none;
 	font-weight: 600;
 	transition: color 0.3s ease;
 }
 
 .teknup-auth-footer a:hover {
-	color: var(--teknup-red-light);
+	color: var(--secondary);
 }
 
 /* Messages */
@@ -642,6 +676,8 @@
 	margin-bottom: var(--teknup-spacing-lg);
 	font-size: 14px;
 	animation: teknup-fade-in 0.3s ease;
+	backdrop-filter: blur(5px);
+	-webkit-backdrop-filter: blur(5px);
 }
 
 .teknup-message-error {
@@ -681,33 +717,35 @@
 }
 
 .teknup-plan-card {
-	background: var(--teknup-bg-card);
+	background: rgba(157, 44, 32, 0.05);
 	border: 1px solid var(--teknup-border);
 	border-radius: var(--teknup-radius-lg);
 	padding: var(--teknup-spacing-xl);
 	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
 	transition: all 0.3s ease;
 	position: relative;
 	display: flex;
 	flex-direction: column;
+	box-shadow: var(--teknup-shadow-card);
 }
 
 .teknup-plan-card:hover {
-	border-color: var(--teknup-red);
+	border-color: var(--primary);
 	box-shadow: var(--teknup-shadow-glow);
 	transform: translateY(-5px);
 }
 
 .teknup-plan-card.featured {
-	border-color: var(--teknup-red);
-	box-shadow: 0 0 30px rgba(220, 20, 60, 0.3);
+	border-color: var(--primary);
+	box-shadow: var(--teknup-shadow-glow-lg);
 }
 
 .teknup-plan-badge {
 	position: absolute;
 	top: -12px;
 	right: var(--teknup-spacing-lg);
-	background: linear-gradient(135deg, var(--teknup-red) 0%, var(--teknup-red-dark) 100%);
+	background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
 	color: var(--teknup-white);
 	padding: var(--teknup-spacing-xs) var(--teknup-spacing-md);
 	border-radius: var(--teknup-radius-sm);
@@ -748,7 +786,10 @@
 }
 
 .teknup-plan-price .price-amount {
-	color: var(--teknup-red);
+	background: linear-gradient(135deg, var(--primary), var(--secondary));
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
 	font-size: 36px;
 	font-weight: 700;
 }
@@ -795,29 +836,6 @@
 	color: var(--teknup-gray-light);
 }
 
-/* Responsive - Auth & Plans */
-@media (max-width: 768px) {
-	.teknup-auth-container {
-		padding: var(--teknup-spacing-md);
-	}
-
-	.teknup-auth-header h2 {
-		font-size: 24px;
-	}
-
-	.teknup-auth-tabs {
-		flex-direction: column;
-	}
-
-	.teknup-auth-tab {
-		text-align: center;
-	}
-
-	.teknup-subscription-plans {
-		grid-template-columns: 1fr;
-	}
-}
-
 /* No Subscription Component */
 .teknup-no-subscription {
 	max-width: 1200px;
@@ -830,10 +848,11 @@
 	text-align: center;
 	margin-bottom: var(--teknup-spacing-xxl);
 	padding: var(--teknup-spacing-xxl);
-	background: var(--teknup-bg-card);
+	background: rgba(157, 44, 32, 0.05);
 	border: 1px solid var(--teknup-border);
 	border-radius: var(--teknup-radius-lg);
 	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
 }
 
 .teknup-no-subscription-icon {
@@ -841,6 +860,7 @@
 	margin-bottom: var(--teknup-spacing-md);
 	filter: grayscale(50%);
 	opacity: 0.7;
+	animation: float 3s ease-in-out infinite;
 }
 
 .teknup-no-subscription-header h2 {
@@ -850,7 +870,7 @@
 	text-transform: uppercase;
 	letter-spacing: 2px;
 	margin-bottom: var(--teknup-spacing-sm);
-	background: linear-gradient(135deg, var(--teknup-red) 0%, var(--teknup-red-light) 100%);
+	background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 	background-clip: text;
@@ -866,12 +886,13 @@
 }
 
 .teknup-no-subscription-info {
-	background: var(--teknup-bg-card);
+	background: rgba(157, 44, 32, 0.05);
 	border: 1px solid var(--teknup-border);
 	border-radius: var(--teknup-radius-lg);
 	padding: var(--teknup-spacing-xl);
 	margin-bottom: var(--teknup-spacing-xl);
 	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
 }
 
 .teknup-no-subscription-info h3 {
@@ -905,7 +926,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: rgba(220, 20, 60, 0.1);
+	background: rgba(157, 44, 32, 0.15);
 	border-radius: var(--teknup-radius-md);
 	padding: var(--teknup-spacing-sm);
 }
@@ -941,10 +962,11 @@
 .teknup-no-subscription-footer {
 	text-align: center;
 	padding: var(--teknup-spacing-lg);
-	background: var(--teknup-bg-card);
+	background: rgba(157, 44, 32, 0.05);
 	border: 1px solid var(--teknup-border);
 	border-radius: var(--teknup-radius-lg);
 	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
 }
 
 .teknup-no-subscription-footer p {
@@ -954,42 +976,14 @@
 }
 
 .teknup-no-subscription-footer a {
-	color: var(--teknup-red);
+	color: var(--primary);
 	text-decoration: none;
 	font-weight: 600;
 	transition: color 0.3s ease;
 }
 
 .teknup-no-subscription-footer a:hover {
-	color: var(--teknup-red-light);
-}
-
-/* Responsive - No Subscription */
-@media (max-width: 768px) {
-	.teknup-no-subscription {
-		padding: var(--teknup-spacing-md);
-	}
-
-	.teknup-no-subscription-header {
-		padding: var(--teknup-spacing-lg);
-	}
-
-	.teknup-no-subscription-header h2 {
-		font-size: 24px;
-	}
-
-	.teknup-no-subscription-icon {
-		font-size: 48px;
-	}
-
-	.teknup-no-subscription-info ul {
-		gap: var(--teknup-spacing-md);
-	}
-
-	.teknup-no-subscription-info .info-icon {
-		font-size: 24px;
-		min-width: 32px;
-	}
+	color: var(--secondary);
 }
 
 /* Beta Badge in Tabs */
@@ -999,11 +993,12 @@
 	padding: 2px 8px;
 	font-size: 10px;
 	font-weight: bold;
-	background: var(--teknup-red);
+	background: linear-gradient(135deg, var(--primary), var(--secondary));
 	color: var(--teknup-white);
 	border-radius: 10px;
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
+	box-shadow: 0 2px 8px rgba(157, 44, 32, 0.3);
 }
 
 /* Coming Soon Page */
@@ -1018,29 +1013,37 @@
 .teknup-coming-soon-content {
 	max-width: 600px;
 	text-align: center;
-	background: var(--teknup-bg-card);
+	background: rgba(157, 44, 32, 0.05);
 	border: 1px solid var(--teknup-border);
 	border-radius: var(--teknup-radius-lg);
 	padding: var(--teknup-spacing-xxl);
-	box-shadow: var(--teknup-shadow-card);
+	box-shadow: var(--teknup-shadow-glow);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	animation: teknup-fade-in 0.5s ease;
 }
 
 .teknup-coming-soon-icon {
 	font-size: 80px;
 	display: block;
 	margin-bottom: var(--teknup-spacing-lg);
+	animation: float 3s ease-in-out infinite;
 }
 
 .teknup-coming-soon h2 {
 	color: var(--teknup-white);
 	font-size: 32px;
 	margin-bottom: var(--teknup-spacing-md);
+	background: linear-gradient(135deg, var(--primary), var(--secondary));
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
 }
 
 .teknup-beta-badge {
 	display: inline-block;
 	padding: 8px 20px;
-	background: linear-gradient(135deg, var(--teknup-red-dark), var(--teknup-red));
+	background: linear-gradient(135deg, var(--primary), var(--secondary));
 	color: var(--teknup-white);
 	font-weight: bold;
 	font-size: 14px;
@@ -1048,7 +1051,8 @@
 	margin-bottom: var(--teknup-spacing-lg);
 	text-transform: uppercase;
 	letter-spacing: 1px;
-	box-shadow: 0 4px 15px rgba(220, 20, 60, 0.4);
+	box-shadow: var(--teknup-shadow-glow);
+	animation: pulse 2s ease-in-out infinite;
 }
 
 .teknup-coming-soon-description {
@@ -1064,12 +1068,15 @@
 	padding: var(--teknup-spacing-lg);
 	background: rgba(0, 0, 0, 0.3);
 	border-radius: var(--teknup-radius-md);
+	border: 1px solid rgba(157, 44, 32, 0.2);
 }
 
 .teknup-coming-soon-features h3 {
-	color: var(--teknup-red-light);
+	color: var(--primary);
 	font-size: 18px;
 	margin-bottom: var(--teknup-spacing-md);
+	text-transform: uppercase;
+	letter-spacing: 1px;
 }
 
 .teknup-coming-soon-features ul {
@@ -1095,5 +1102,157 @@
 }
 
 .teknup-coming-soon-notify strong {
-	color: var(--teknup-red-light);
+	color: var(--primary);
+}
+
+/* Animations */
+@keyframes teknup-spin {
+	to { transform: rotate(360deg); }
+}
+
+@keyframes teknup-fade-in {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes float {
+	0%, 100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-10px);
+	}
+}
+
+@keyframes pulse {
+	0%, 100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.7;
+	}
+}
+
+@keyframes shimmer {
+	0% {
+		transform: translateX(-100%);
+	}
+	100% {
+		transform: translateX(100%);
+	}
+}
+
+.teknup-fade-in {
+	animation: teknup-fade-in 0.5s ease;
+}
+
+/* Admin Dashboard Specific Styles */
+.teknup-dashboard .teknup-stats-cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: var(--teknup-spacing-lg);
+	margin-bottom: var(--teknup-spacing-xl);
+}
+
+.teknup-dashboard .teknup-stat-card {
+	display: flex;
+	align-items: center;
+	gap: var(--teknup-spacing-md);
+}
+
+.teknup-dashboard .teknup-stat-icon {
+	font-size: 32px;
+}
+
+.teknup-dashboard .teknup-chart-container {
+	background: rgba(255, 255, 255, 0.05);
+	padding: var(--teknup-spacing-lg);
+	border-radius: var(--teknup-radius-md);
+	margin-bottom: var(--teknup-spacing-xl);
+	border: 1px solid var(--teknup-border);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+}
+
+.teknup-dashboard .teknup-chart-container canvas {
+	max-height: 300px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.teknup-stats-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.teknup-job-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--teknup-spacing-sm);
+	}
+
+	.teknup-job-meta {
+		flex-direction: column;
+		gap: var(--teknup-spacing-xs);
+	}
+
+	.teknup-auth-container {
+		padding: var(--teknup-spacing-md);
+	}
+
+	.teknup-auth-header h2 {
+		font-size: 24px;
+	}
+
+	.teknup-auth-tabs {
+		flex-direction: column;
+	}
+
+	.teknup-auth-tab {
+		text-align: center;
+	}
+
+	.teknup-subscription-plans {
+		grid-template-columns: 1fr;
+	}
+
+	.teknup-no-subscription {
+		padding: var(--teknup-spacing-md);
+	}
+
+	.teknup-no-subscription-header {
+		padding: var(--teknup-spacing-lg);
+	}
+
+	.teknup-no-subscription-header h2 {
+		font-size: 24px;
+	}
+
+	.teknup-no-subscription-icon {
+		font-size: 48px;
+	}
+
+	.teknup-no-subscription-info ul {
+		gap: var(--teknup-spacing-md);
+	}
+
+	.teknup-no-subscription-info .info-icon {
+		font-size: 24px;
+		min-width: 32px;
+	}
+
+	.teknup-tabs {
+		flex-wrap: wrap;
+		gap: var(--teknup-spacing-sm);
+	}
+
+	.teknup-tab {
+		font-size: 14px;
+		padding: var(--teknup-spacing-sm) var(--teknup-spacing-md);
+	}
 }
