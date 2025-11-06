@@ -480,10 +480,17 @@ class Tonn {
 			// Task completed - full download_url_preview_revived should be available
 			return $this->handle_success( $job_id, $data );
 		} elseif ( $state === 'MIXREVIVE_TASK_PREVIEW_COMPLETED' ) {
-			// Preview completed - this is intermediate, just update status
-			teknup_ai_mastering()->log( "Preview completed for job {$job_id}", 'info' );
-			teknup_ai_mastering()->jobs->update_status( $job_id, 'processing', array() );
-			return true;
+			// Preview completed - check if this is the final state
+			// For /mixenhance jobs without stems, this is often the final callback with download URLs
+			if ( isset( $data['download_url_preview_revived'] ) && ! empty( $data['download_url_preview_revived'] ) ) {
+				teknup_ai_mastering()->log( "Preview completed with download URL for job {$job_id} - treating as final state", 'info' );
+				return $this->handle_success( $job_id, $data );
+			} else {
+				// No download URL yet, this is truly intermediate
+				teknup_ai_mastering()->log( "Preview completed for job {$job_id} (intermediate state)", 'info' );
+				teknup_ai_mastering()->jobs->update_status( $job_id, 'processing', array() );
+				return true;
+			}
 		} elseif ( $state === 'MIXREVIVE_TASK_FAILED' || $state === 'FAILED' || $state === 'ERROR' ) {
 			return $this->handle_failure( $job_id, $data );
 		} elseif ( $state === 'MIXREVIVE_TASK_STARTED' ) {
