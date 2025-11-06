@@ -313,11 +313,11 @@ class Tonn {
 		$loudness_preference = $this->map_lufs_to_loudness_preference( $target_lufs );
 		$intensity_settings = $this->map_intensity_to_settings( $intensity );
 
-		teknup_ai_mastering()->log( "Submitting job {$job_id} with user parameters: genre={$genre}, intensity={$intensity}, target_lufs={$target_lufs}", 'info' );
+		teknup_ai_mastering()->log( "Submitting PREVIEW job {$job_id} (free with watermark) with user parameters: genre={$genre}, intensity={$intensity}, target_lufs={$target_lufs}", 'info' );
 		teknup_ai_mastering()->log( "Mapped to Tonn parameters: musicalStyle={$musical_style}, loudnessPreference={$loudness_preference}", 'info' );
 		teknup_ai_mastering()->log( "Webhook URL: {$webhook_url}", 'debug' );
 
-		// Prepare mix revive parameters (mastering)
+		// Prepare mix revive parameters (mastering) for PREVIEW mode
 		$body = array(
 			'mixReviveData' => array(
 				'audioFileLocation'      => $audio_url,
@@ -335,7 +335,7 @@ class Tonn {
 			),
 		);
 
-		return $this->make_request( 'POST', '/mixenhance', $body );
+		return $this->make_request( 'POST', '/mixenhancepreview', $body );
 	}
 
 	/**
@@ -583,33 +583,17 @@ class Tonn {
 			// Task completed - full download_url_revived should be available
 			return $this->handle_success( $job_id, $data );
 		} elseif ( $state === 'MIXREVIVE_TASK_PREVIEW_COMPLETED' ) {
-			// Preview completed - fetch final results to get download_url_revived (without watermark)
-			// The webhook only gives download_url_preview_revived which has "ROEX AUDIO" watermark
-			teknup_ai_mastering()->log( "Preview completed for job {$job_id}, fetching final track results", 'info' );
+			// Preview completed - use preview file with watermark (free mode for testing)
+			teknup_ai_mastering()->log( "Preview completed for job {$job_id}, using preview with watermark (free mode)", 'info' );
 
-			// Call /retrieveenhancedtrack to get the final file without watermark
-			$final_results = $this->check_job_status( $tonn_task_id );
-
-			if ( is_wp_error( $final_results ) ) {
-				teknup_ai_mastering()->log( "Failed to retrieve final results for job {$job_id}: " . $final_results->get_error_message(), 'error' );
-				// Keep processing status, cron will retry later
-				teknup_ai_mastering()->jobs->update_status( $job_id, 'processing', array() );
-				return true;
+			// Check if preview download URL is available
+			if ( isset( $data['download_url_preview_revived'] ) && ! empty( $data['download_url_preview_revived'] ) ) {
+				teknup_ai_mastering()->log( "Preview track with watermark available for job {$job_id}", 'info' );
+				return $this->handle_success( $job_id, $data );
 			}
 
-			// Check if we have the final track results
-			if ( isset( $final_results['revivedTrackTaskResults'] ) && ! empty( $final_results['revivedTrackTaskResults'] ) ) {
-				$track_data = $final_results['revivedTrackTaskResults'];
-
-				// Check if final download URL (without watermark) is available
-				if ( isset( $track_data['download_url_revived'] ) && ! empty( $track_data['download_url_revived'] ) ) {
-					teknup_ai_mastering()->log( "Final track (without watermark) available for job {$job_id}", 'info' );
-					return $this->handle_success( $job_id, $track_data );
-				}
-			}
-
-			// Final track not ready yet, keep processing
-			teknup_ai_mastering()->log( "Final track not ready yet for job {$job_id}, will retry via cron", 'info' );
+			// Preview URL not available yet
+			teknup_ai_mastering()->log( "Preview URL not available yet for job {$job_id}", 'error' );
 			teknup_ai_mastering()->jobs->update_status( $job_id, 'processing', array() );
 			return true;
 		} elseif ( $state === 'MIXREVIVE_TASK_FAILED' || $state === 'FAILED' || $state === 'ERROR' ) {

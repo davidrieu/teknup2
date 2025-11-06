@@ -91,19 +91,20 @@ class Cron {
 					continue;
 				}
 
-				// Check if final track (without watermark) is ready
+				// Check if preview track (with watermark) is ready
+				// In preview mode, we use download_url_preview_revived (free mode for testing)
 				if ( isset( $status['revivedTrackTaskResults'] ) && ! empty( $status['revivedTrackTaskResults'] ) ) {
 					$track_data = $status['revivedTrackTaskResults'];
 
-					// If download_url_revived is available, finalize the job
-					if ( isset( $track_data['download_url_revived'] ) && ! empty( $track_data['download_url_revived'] ) ) {
-						teknup_ai_mastering()->log( "Cron: Final track available for job {$job->id}, finalizing", 'info' );
+					// If download_url_preview_revived is available, finalize the job (preview mode)
+					if ( isset( $track_data['download_url_preview_revived'] ) && ! empty( $track_data['download_url_preview_revived'] ) ) {
+						teknup_ai_mastering()->log( "Cron: Preview track available for job {$job->id}, finalizing (free mode)", 'info' );
 						$tonn->handle_webhook(
 							array_merge(
 								$track_data,
 								array(
 									'mixrevive_task_id' => $job->tonn_job_id,
-									'state' => 'COMPLETED',
+									'state' => 'MIXREVIVE_TASK_PREVIEW_COMPLETED',
 								)
 							)
 						);
