@@ -200,7 +200,11 @@ class Database {
 	public function get_user_monthly_jobs_count( $user_id ) {
 		global $wpdb;
 
-		$start_of_month = date( 'Y-m-01 00:00:00' );
+		// Check if user has a subscription start date (excludes free trial jobs)
+		$subscription_start = get_user_meta( $user_id, 'teknup_subscription_start_date', true );
+
+		// Use subscription start date if available, otherwise use start of current month
+		$start_date = $subscription_start ? $subscription_start : date( 'Y-m-01 00:00:00' );
 
 		return (int) $wpdb->get_var(
 			$wpdb->prepare(
@@ -209,7 +213,7 @@ class Database {
 				AND status = 'completed'
 				AND completed_at >= %s",
 				$user_id,
-				$start_of_month
+				$start_date
 			)
 		);
 	}

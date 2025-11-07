@@ -55,6 +55,9 @@ class Subscriptions {
 
 		// Hook into job completion to increment usage counter
 		add_action( 'teknup_job_completed', array( $this, 'on_job_completed' ) );
+
+		// Hook into subscription activation to record start date
+		add_action( 'woocommerce_subscription_status_active', array( $this, 'on_subscription_activated' ) );
 	}
 
 	/**
@@ -272,6 +275,9 @@ class Subscriptions {
 		update_user_meta( $user_id, 'teknup_trial_count', 0 );
 		update_user_meta( $user_id, 'teknup_trial_used', false );
 
+		// Reset subscription start date to now (for new billing period)
+		update_user_meta( $user_id, 'teknup_subscription_start_date', current_time( 'mysql' ) );
+
 		teknup_ai_mastering()->log( "Monthly counter reset for user {$user_id}", 'info' );
 
 		/**
@@ -300,6 +306,24 @@ class Subscriptions {
 		$this->increment_usage( $job->user_id );
 
 		teknup_ai_mastering()->log( "Usage incremented for user {$job->user_id} after job {$job_id} completed", 'info' );
+	}
+
+	/**
+	 * Handle subscription activation to record start date
+	 *
+	 * @param object $subscription Subscription object.
+	 */
+	public function on_subscription_activated( $subscription ) {
+		$user_id = $subscription->get_user_id();
+
+		// Check if this is the first paid subscription (not a renewal)
+		$subscription_start = get_user_meta( $user_id, 'teknup_subscription_start_date', true );
+
+		if ( ! $subscription_start ) {
+			// Record the subscription start date (this excludes free trial jobs from paid plan counts)
+			update_user_meta( $user_id, 'teknup_subscription_start_date', current_time( 'mysql' ) );
+			teknup_ai_mastering()->log( "Subscription start date recorded for user {$user_id}", 'info' );
+		}
 	}
 
 	/**
