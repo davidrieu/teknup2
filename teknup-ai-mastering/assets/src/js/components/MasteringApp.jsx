@@ -44,7 +44,6 @@ const MasteringApp = () => {
 					className={`teknup-tab ${activeTab === 'stems' ? 'active' : ''}`}
 					onClick={() => setActiveTab('stems')}
 				>
-					<span className="teknup-tab-icon">🎛️</span>
 					Stem Separation
 					<span className="teknup-tab-badge">BETA</span>
 				</button>
