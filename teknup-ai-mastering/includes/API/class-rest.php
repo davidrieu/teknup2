@@ -888,7 +888,7 @@ class REST {
 				'slug'          => $slug,
 				'name'          => $product->get_name(),
 				'price'         => $price,
-				'currency'      => get_woocommerce_currency_symbol(),
+				'currency'      => html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ),
 				'monthly_limit' => $monthly_limit,
 				'billing_period' => 'month',
 				'features'      => $features,
