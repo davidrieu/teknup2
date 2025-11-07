@@ -318,6 +318,14 @@
 	border: 1px solid var(--teknup-border) !important;
 }
 
+/* Style select dropdown options */
+.teknup-select option {
+	background-color: rgba(10, 10, 10, 0.95) !important;
+	background: rgba(10, 10, 10, 0.95) !important;
+	color: var(--teknup-white) !important;
+	padding: 8px !important;
+}
+
 /* Fix autocomplete styles to ensure text is visible */
 .teknup-input:-webkit-autofill,
 .teknup-input:-webkit-autofill:hover,
