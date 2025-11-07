@@ -94,6 +94,17 @@ const Dashboard = () => {
 				</div>
 			</div>
 
+			{/* Manage Subscription Button */}
+			<div style={{ marginBottom: '24px', textAlign: 'center' }}>
+				<a
+					href={window.teknupData.siteUrl + '/my-account'}
+					className="teknup-button"
+					style={{ display: 'inline-block' }}
+				>
+					Manage Subscription
+				</a>
+			</div>
+
 			{/* Quota Progress Bar */}
 			{quota && !quota.unlimited && (
 				<div className="teknup-card" style={{ marginBottom: '24px' }}>
