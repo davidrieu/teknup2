@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import SubscriptionPlans from './SubscriptionPlans';
 
 const Auth = ({ onAuthSuccess }) => {
 	const [activeTab, setActiveTab] = useState('login');
@@ -127,16 +126,6 @@ const Auth = ({ onAuthSuccess }) => {
 					}}
 				>
 					Create Account
-				</button>
-				<button
-					className={`teknup-auth-tab ${activeTab === 'plans' ? 'active' : ''}`}
-					onClick={() => {
-						setActiveTab('plans');
-						setError('');
-						setSuccess('');
-					}}
-				>
-					Plans & Pricing
 				</button>
 			</div>
 
@@ -276,21 +265,6 @@ const Auth = ({ onAuthSuccess }) => {
 					</form>
 				)}
 
-				{/* Plans Tab */}
-				{activeTab === 'plans' && (
-					<div className="teknup-plans-wrapper">
-						<p className="teknup-plans-intro">
-							Choose the plan that best fits your needs. You can upgrade or downgrade at any time.
-						</p>
-						<SubscriptionPlans />
-						<p className="teknup-auth-footer" style={{ textAlign: 'center', marginTop: '30px' }}>
-							Already subscribed?{' '}
-							<a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('login'); }}>
-								Login to your account
-							</a>
-						</p>
-					</div>
-				)}
 			</div>
 		</div>
 	);

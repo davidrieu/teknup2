@@ -300,12 +300,24 @@
 	border: 1px solid var(--teknup-border);
 	border-radius: var(--teknup-radius-md);
 	padding: var(--teknup-spacing-md);
-	color: var(--teknup-white);
+	color: var(--teknup-white) !important;
 	width: 100%;
 	font-size: 14px;
 	transition: all 0.3s ease;
 	backdrop-filter: blur(5px);
 	-webkit-backdrop-filter: blur(5px);
+}
+
+/* Fix autocomplete styles to ensure text is visible */
+.teknup-input:-webkit-autofill,
+.teknup-input:-webkit-autofill:hover,
+.teknup-input:-webkit-autofill:focus,
+.teknup-input:-webkit-autofill:active {
+	-webkit-text-fill-color: var(--teknup-white) !important;
+	-webkit-box-shadow: 0 0 0 30px rgba(255, 255, 255, 0.08) inset !important;
+	box-shadow: 0 0 0 30px rgba(255, 255, 255, 0.08) inset !important;
+	caret-color: var(--teknup-white) !important;
+	transition: background-color 5000s ease-in-out 0s;
 }
 
 .teknup-input:focus,
@@ -314,6 +326,13 @@
 	border-color: var(--primary);
 	box-shadow: 0 0 0 2px rgba(157, 44, 32, 0.2);
 	background: rgba(255, 255, 255, 0.08);
+	color: var(--teknup-white) !important;
+}
+
+/* Ensure placeholder is visible */
+.teknup-input::placeholder {
+	color: rgba(255, 255, 255, 0.5);
+	opacity: 1;
 }
 
 .teknup-label {
