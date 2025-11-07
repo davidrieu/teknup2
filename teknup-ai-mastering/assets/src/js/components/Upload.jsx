@@ -73,6 +73,12 @@ const Upload = () => {
 	const handleUpload = async () => {
 		if (!file) return;
 
+		// Check if quota is exceeded
+		if (quota && quota.remaining === 0 && !quota.unlimited) {
+			setError('You have reached your monthly limit. Please upgrade your plan to continue.');
+			return;
+		}
+
 		setUploading(true);
 		setProgress(0);
 		setError(null);
@@ -166,6 +172,25 @@ const Upload = () => {
 				</div>
 			)}
 
+			{quota && quota.remaining === 0 && !quota.unlimited && (
+				<div className="teknup-card" style={{ marginBottom: '24px', background: 'rgba(255, 152, 0, 0.1)', borderColor: 'rgba(255, 152, 0, 0.3)' }}>
+					<div style={{ textAlign: 'center' }}>
+						<div style={{ fontSize: '48px', marginBottom: '16px' }}>🔒</div>
+						<h3>Monthly Limit Reached</h3>
+						<p style={{ marginTop: '8px', marginBottom: '16px' }}>
+							You've used all {quota.limit} master{quota.limit > 1 ? 's' : ''} for this month.
+						</p>
+						<a
+							href={window.teknupData.siteUrl + '/shop'}
+							className="teknup-button"
+							style={{ display: 'inline-block' }}
+						>
+							Upgrade Your Plan
+						</a>
+					</div>
+				</div>
+			)}
+
 			{!job && (
 				<>
 					<div
@@ -244,9 +269,9 @@ const Upload = () => {
 								<button
 									className="teknup-button"
 									onClick={handleUpload}
-									disabled={uploading}
+									disabled={uploading || (quota && quota.remaining === 0 && !quota.unlimited)}
 								>
-									{uploading ? 'Processing...' : 'Start Mastering'}
+									{uploading ? 'Processing...' : (quota && quota.remaining === 0 && !quota.unlimited) ? 'Quota Exceeded' : 'Start Mastering'}
 								</button>
 								<button
 									className="teknup-button teknup-button-secondary"

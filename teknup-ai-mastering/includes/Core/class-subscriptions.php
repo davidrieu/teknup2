@@ -52,6 +52,9 @@ class Subscriptions {
 		// Hook into subscription renewal to reset counters
 		add_action( 'woocommerce_subscription_renewal_payment_complete', array( $this, 'reset_monthly_counter' ) );
 		add_action( 'woocommerce_scheduled_subscription_payment', array( $this, 'reset_monthly_counter' ) );
+
+		// Hook into job completion to increment usage counter
+		add_action( 'teknup_job_completed', array( $this, 'on_job_completed' ) );
 	}
 
 	/**
@@ -278,6 +281,25 @@ class Subscriptions {
 		 * @param object $subscription Subscription object.
 		 */
 		do_action( 'teknup_monthly_counter_reset', $user_id, $subscription );
+	}
+
+	/**
+	 * Handle job completion to increment usage counter
+	 *
+	 * @param int $job_id Job ID.
+	 */
+	public function on_job_completed( $job_id ) {
+		// Get job details to find user
+		$job = teknup_ai_mastering()->jobs->get_job( $job_id );
+
+		if ( ! $job || is_wp_error( $job ) ) {
+			return;
+		}
+
+		// Increment usage for the user
+		$this->increment_usage( $job->user_id );
+
+		teknup_ai_mastering()->log( "Usage incremented for user {$job->user_id} after job {$job_id} completed", 'info' );
 	}
 
 	/**
