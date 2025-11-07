@@ -1,6 +1,6 @@
 <?php
 /**
- * Subscriptions class - Handles WooCommerce subscription integration
+ * Subscriptions class - Handles credit-based system
  *
  * @package Teknup\Core
  */
@@ -13,171 +13,102 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Subscriptions class
+ * Subscriptions class - Now manages credits instead of monthly subscriptions
  */
 class Subscriptions {
-
-	/**
-	 * Plan limits
-	 *
-	 * @var array
-	 */
-	private $plan_limits = array(
-		'free_trial' => array(
-			'name' => 'Free Trial',
-			'monthly_limit' => 3,
-			'features' => array( 'basic' ),
-		),
-		'starter' => array(
-			'name' => 'Starter',
-			'monthly_limit' => 20,
-			'features' => array( 'basic', 'advanced_controls', 'presets', 'unlimited_revisions' ),
-		),
-		'pro' => array(
-			'name' => 'Pro',
-			'monthly_limit' => -1, // Unlimited
-			'features' => array( 'basic', 'advanced_controls', 'presets', 'unlimited_revisions', 'priority_queue', 'target_lufs', 'batch_processing', 'reference_matching' ),
-		),
-		'label' => array(
-			'name' => 'Label',
-			'monthly_limit' => -1, // Unlimited
-			'features' => array( 'basic', 'advanced_controls', 'presets', 'unlimited_revisions', 'priority_queue', 'target_lufs', 'batch_processing', 'reference_matching', 'api_access', 'white_label' ),
-		),
-	);
 
 	/**
 	 * Constructor
 	 */
 	public function __construct() {
-		// Hook into subscription renewal to reset counters
-		add_action( 'woocommerce_subscription_renewal_payment_complete', array( $this, 'reset_monthly_counter' ) );
-		add_action( 'woocommerce_scheduled_subscription_payment', array( $this, 'reset_monthly_counter' ) );
+		// Hook to give free trial credit to new users
+		add_action( 'user_register', array( $this, 'give_free_trial_credit' ) );
 	}
 
 	/**
-	 * Get user's active subscription
+	 * Give free trial credit to new user
 	 *
 	 * @param int $user_id User ID.
-	 * @return object|null Subscription object or null.
 	 */
-	public function get_user_subscription( $user_id = null ) {
+	public function give_free_trial_credit( $user_id ) {
+		// Give 1 free master credit
+		update_user_meta( $user_id, 'teknup_credits', 1 );
+		update_user_meta( $user_id, 'teknup_trial_given', true );
+
+		if ( function_exists( 'teknup_ai_mastering' ) ) {
+			teknup_ai_mastering()->log( "Free trial credit given to new user {$user_id}", 'info' );
+		}
+	}
+
+	/**
+	 * Get user's credits
+	 *
+	 * @param int $user_id User ID.
+	 * @return int Number of credits.
+	 */
+	public function get_user_credits( $user_id = null ) {
 		if ( ! $user_id ) {
 			$user_id = get_current_user_id();
 		}
 
-		if ( ! function_exists( 'wcs_get_users_subscriptions' ) ) {
-			return null;
+		$credits = (int) get_user_meta( $user_id, 'teknup_credits', true );
+
+		return max( 0, $credits );
+	}
+
+	/**
+	 * Check if user has used their free trial
+	 *
+	 * @param int $user_id User ID.
+	 * @return bool True if trial was used.
+	 */
+	public function has_used_trial( $user_id = null ) {
+		if ( ! $user_id ) {
+			$user_id = get_current_user_id();
 		}
 
-		$subscriptions = wcs_get_users_subscriptions( $user_id );
+		// Check if trial was given
+		$trial_given = get_user_meta( $user_id, 'teknup_trial_given', true );
 
-		foreach ( $subscriptions as $subscription ) {
-			if ( $subscription->has_status( 'active' ) ) {
-				return $subscription;
+		// Check if any master was downloaded (indicates trial was used)
+		$first_download = get_user_meta( $user_id, 'teknup_first_download', true );
+
+		return $trial_given && $first_download;
+	}
+
+	/**
+	 * Check if user has downloaded their first master
+	 *
+	 * @param int $user_id User ID.
+	 * @return bool True if first master was downloaded.
+	 */
+	public function has_downloaded_first_master( $user_id = null ) {
+		if ( ! $user_id ) {
+			$user_id = get_current_user_id();
+		}
+
+		return (bool) get_user_meta( $user_id, 'teknup_first_download', true );
+	}
+
+	/**
+	 * Mark first master as downloaded
+	 *
+	 * @param int $user_id User ID.
+	 */
+	public function mark_first_download( $user_id = null ) {
+		if ( ! $user_id ) {
+			$user_id = get_current_user_id();
+		}
+
+		$already_downloaded = get_user_meta( $user_id, 'teknup_first_download', true );
+
+		if ( ! $already_downloaded ) {
+			update_user_meta( $user_id, 'teknup_first_download', current_time( 'mysql' ) );
+
+			if ( function_exists( 'teknup_ai_mastering' ) ) {
+				teknup_ai_mastering()->log( "User {$user_id} downloaded their first master", 'info' );
 			}
 		}
-
-		return null;
-	}
-
-	/**
-	 * Get user's plan
-	 *
-	 * @param int $user_id User ID.
-	 * @return string Plan slug.
-	 */
-	public function get_user_plan( $user_id = null ) {
-		if ( ! $user_id ) {
-			$user_id = get_current_user_id();
-		}
-
-		// Check for active subscription
-		$subscription = $this->get_user_subscription( $user_id );
-
-		if ( $subscription ) {
-			// Get plan from subscription product meta
-			foreach ( $subscription->get_items() as $item ) {
-				$product_id = $item->get_product_id();
-				$plan_slug = get_post_meta( $product_id, '_teknup_plan_slug', true );
-
-				if ( $plan_slug && isset( $this->plan_limits[ $plan_slug ] ) ) {
-					return $plan_slug;
-				}
-			}
-
-			// Fallback: try to detect from product name
-			foreach ( $subscription->get_items() as $item ) {
-				$product_name = strtolower( $item->get_name() );
-
-				if ( strpos( $product_name, 'label' ) !== false ) {
-					return 'label';
-				} elseif ( strpos( $product_name, 'pro' ) !== false ) {
-					return 'pro';
-				} elseif ( strpos( $product_name, 'starter' ) !== false ) {
-					return 'starter';
-				}
-			}
-		}
-
-		// Check for free trial
-		$trial_used = get_user_meta( $user_id, 'teknup_trial_used', true );
-		$trial_count = get_user_meta( $user_id, 'teknup_trial_count', true );
-
-		if ( ! $trial_used || (int) $trial_count < 3 ) {
-			return 'free_trial';
-		}
-
-		return 'none';
-	}
-
-	/**
-	 * Get plan limits
-	 *
-	 * @param string $plan Plan slug.
-	 * @return array|null Plan limits or null.
-	 */
-	public function get_plan_limits( $plan ) {
-		return isset( $this->plan_limits[ $plan ] ) ? $this->plan_limits[ $plan ] : null;
-	}
-
-	/**
-	 * Get user's monthly limit
-	 *
-	 * @param int $user_id User ID.
-	 * @return int Monthly limit (-1 for unlimited).
-	 */
-	public function get_user_monthly_limit( $user_id = null ) {
-		if ( ! $user_id ) {
-			$user_id = get_current_user_id();
-		}
-
-		$plan = $this->get_user_plan( $user_id );
-		$limits = $this->get_plan_limits( $plan );
-
-		return $limits ? $limits['monthly_limit'] : 0;
-	}
-
-	/**
-	 * Get user's monthly usage
-	 *
-	 * @param int $user_id User ID.
-	 * @return int Monthly usage count.
-	 */
-	public function get_user_monthly_usage( $user_id = null ) {
-		if ( ! $user_id ) {
-			$user_id = get_current_user_id();
-		}
-
-		$plan = $this->get_user_plan( $user_id );
-
-		// For free trial, use user meta
-		if ( $plan === 'free_trial' ) {
-			$trial_count = get_user_meta( $user_id, 'teknup_trial_count', true );
-			return (int) $trial_count;
-		}
-
-		// For paid plans, count completed jobs this month
-		return teknup_ai_mastering()->jobs->get_user_monthly_jobs_count( $user_id );
 	}
 
 	/**
@@ -195,113 +126,76 @@ class Subscriptions {
 			return new \WP_Error( 'not_logged_in', __( 'You must be logged in to upload files.', 'teknup-ai-mastering' ) );
 		}
 
-		$plan = $this->get_user_plan( $user_id );
+		$credits = $this->get_user_credits( $user_id );
+		$has_used_trial = $this->has_used_trial( $user_id );
 
-		if ( $plan === 'none' ) {
+		// If no credits and trial was already used
+		if ( $credits <= 0 && $has_used_trial ) {
 			return new \WP_Error(
-				'no_subscription',
-				__( 'You need an active subscription to upload files. Please subscribe to continue.', 'teknup-ai-mastering' )
+				'no_credits',
+				__( 'You have no master credits left. Please purchase a credit pack to continue.', 'teknup-ai-mastering' )
 			);
 		}
 
-		$limit = $this->get_user_monthly_limit( $user_id );
-		$usage = $this->get_user_monthly_usage( $user_id );
-
-		// Unlimited
-		if ( $limit === -1 ) {
-			return true;
-		}
-
-		// Check limit
-		if ( $usage >= $limit ) {
-			return new \WP_Error(
-				'limit_reached',
-				sprintf(
-					__( 'You have reached your monthly limit of %d masters. Please upgrade your plan to continue.', 'teknup-ai-mastering' ),
-					$limit
-				)
-			);
+		// If no credits and trial not given yet (shouldn't happen with auto-give on register, but safety check)
+		if ( $credits <= 0 ) {
+			// Give free trial credit
+			$this->give_free_trial_credit( $user_id );
+			$credits = 1;
 		}
 
 		return true;
 	}
 
 	/**
-	 * Increment usage counter
+	 * Use one credit (decrement)
 	 *
 	 * @param int $user_id User ID.
 	 * @return bool True on success.
 	 */
-	public function increment_usage( $user_id = null ) {
+	public function use_credit( $user_id = null ) {
 		if ( ! $user_id ) {
 			$user_id = get_current_user_id();
 		}
 
-		$plan = $this->get_user_plan( $user_id );
+		$credits = $this->get_user_credits( $user_id );
 
-		// For free trial, increment user meta
-		if ( $plan === 'free_trial' ) {
-			$trial_count = get_user_meta( $user_id, 'teknup_trial_count', true );
-			$new_count = (int) $trial_count + 1;
-			update_user_meta( $user_id, 'teknup_trial_count', $new_count );
+		if ( $credits > 0 ) {
+			$new_credits = $credits - 1;
+			update_user_meta( $user_id, 'teknup_credits', $new_credits );
 
-			if ( $new_count >= 3 ) {
-				update_user_meta( $user_id, 'teknup_trial_used', true );
+			if ( function_exists( 'teknup_ai_mastering' ) ) {
+				teknup_ai_mastering()->log( "User {$user_id} used 1 credit. Remaining: {$new_credits}", 'info' );
 			}
+
+			return true;
 		}
 
-		// For paid plans, usage is counted from completed jobs automatically
-
-		return true;
+		return false;
 	}
 
 	/**
-	 * Reset monthly counter on subscription renewal
+	 * Add credits to user
 	 *
-	 * @param object $subscription Subscription object.
+	 * @param int $user_id User ID.
+	 * @param int $amount Amount of credits to add.
+	 * @return int New total credits.
 	 */
-	public function reset_monthly_counter( $subscription ) {
-		$user_id = $subscription->get_user_id();
+	public function add_credits( $user_id, $amount ) {
+		$current = $this->get_user_credits( $user_id );
+		$new_total = $current + $amount;
 
-		// Reset trial counter if applicable
-		update_user_meta( $user_id, 'teknup_trial_count', 0 );
-		update_user_meta( $user_id, 'teknup_trial_used', false );
+		update_user_meta( $user_id, 'teknup_credits', $new_total );
 
-		teknup_ai_mastering()->log( "Monthly counter reset for user {$user_id}", 'info' );
+		if ( function_exists( 'teknup_ai_mastering' ) ) {
+			teknup_ai_mastering()->log( "Added {$amount} credits to user {$user_id}. New total: {$new_total}", 'info' );
+		}
 
-		/**
-		 * Fires after monthly counter is reset
-		 *
-		 * @param int    $user_id User ID.
-		 * @param object $subscription Subscription object.
-		 */
-		do_action( 'teknup_monthly_counter_reset', $user_id, $subscription );
+		return $new_total;
 	}
 
 	/**
-	 * Check if user has feature
-	 *
-	 * @param string $feature Feature slug.
-	 * @param int    $user_id User ID.
-	 * @return bool True if user has feature.
-	 */
-	public function user_has_feature( $feature, $user_id = null ) {
-		if ( ! $user_id ) {
-			$user_id = get_current_user_id();
-		}
-
-		$plan = $this->get_user_plan( $user_id );
-		$limits = $this->get_plan_limits( $plan );
-
-		if ( ! $limits ) {
-			return false;
-		}
-
-		return in_array( $feature, $limits['features'], true );
-	}
-
-	/**
-	 * Get user's remaining quota
+	 * Get user's quota information
 	 *
 	 * @param int $user_id User ID.
 	 * @return array Quota information.
@@ -311,49 +205,99 @@ class Subscriptions {
 			$user_id = get_current_user_id();
 		}
 
-		$plan = $this->get_user_plan( $user_id );
-		$limit = $this->get_user_monthly_limit( $user_id );
-		$usage = $this->get_user_monthly_usage( $user_id );
-		$limits = $this->get_plan_limits( $plan );
+		$credits = $this->get_user_credits( $user_id );
+		$has_used_trial = $this->has_used_trial( $user_id );
+		$has_downloaded_first = $this->has_downloaded_first_master( $user_id );
+
+		$status = 'active';
+		if ( $credits <= 0 && $has_used_trial ) {
+			$status = 'no_credits';
+		} elseif ( $credits === 1 && ! $has_downloaded_first ) {
+			$status = 'trial';
+		}
 
 		return array(
-			'plan' => $plan,
-			'plan_name' => $limits ? $limits['name'] : 'None',
-			'limit' => $limit,
-			'usage' => $usage,
-			'remaining' => $limit === -1 ? -1 : max( 0, $limit - $usage ),
-			'unlimited' => $limit === -1,
-			'percentage' => $limit === -1 ? 0 : min( 100, round( ( $usage / $limit ) * 100, 2 ) ),
+			'credits' => $credits,
+			'has_used_trial' => $has_used_trial,
+			'has_downloaded_first' => $has_downloaded_first,
+			'status' => $status,
+			'can_upload' => $credits > 0,
 		);
 	}
 
 	/**
-	 * Check if user has an active subscription (paid or free trial)
+	 * Check if user has an active subscription (has credits)
 	 *
 	 * @param int $user_id User ID.
-	 * @return bool True if user has active subscription or free trial.
+	 * @return bool True if user has credits.
 	 */
 	public function has_active_subscription( $user_id = null ) {
 		if ( ! $user_id ) {
 			$user_id = get_current_user_id();
 		}
 
-		// Check for active paid subscription
-		$subscription = $this->get_user_subscription( $user_id );
-		if ( $subscription ) {
-			return true;
+		$credits = $this->get_user_credits( $user_id );
+
+		return $credits > 0;
+	}
+
+	/**
+	 * Increment usage - now just uses a credit
+	 * Kept for backward compatibility
+	 *
+	 * @param int $user_id User ID.
+	 * @return bool True on success.
+	 */
+	public function increment_usage( $user_id = null ) {
+		return $this->use_credit( $user_id );
+	}
+
+	/**
+	 * Get available credit packs
+	 *
+	 * @return array Credit packs with product info.
+	 */
+	public function get_credit_packs() {
+		$products = get_option( 'teknup_credit_products', array() );
+		$packs = array();
+
+		foreach ( $products as $slug => $product_id ) {
+			$product = wc_get_product( $product_id );
+
+			if ( ! $product ) {
+				continue;
+			}
+
+			$credits = $product->get_meta( '_teknup_credits', true );
+
+			$packs[] = array(
+				'id' => $product_id,
+				'slug' => $slug,
+				'name' => $product->get_name(),
+				'price' => $product->get_price(),
+				'credits' => (int) $credits,
+				'description' => $product->get_description(),
+				'features' => $this->parse_features( $product->get_short_description() ),
+				'url' => $product->get_permalink(),
+			);
 		}
 
-		// Check for free trial
-		$trial_used = get_user_meta( $user_id, 'teknup_trial_used', true );
-		$trial_count = get_user_meta( $user_id, 'teknup_trial_count', true );
+		return $packs;
+	}
 
-		// User has free trial if they haven't used it or haven't reached the limit
-		if ( ! $trial_used || (int) $trial_count < 3 ) {
-			return true;
+	/**
+	 * Parse features from HTML list
+	 *
+	 * @param string $html HTML content.
+	 * @return array Features.
+	 */
+	private function parse_features( $html ) {
+		$features = array();
+
+		if ( preg_match_all( '/<li>(.*?)<\/li>/s', $html, $matches ) ) {
+			$features = array_map( 'wp_strip_all_tags', $matches[1] );
 		}
 
-		// No active subscription or trial
-		return false;
+		return $features;
 	}
 }

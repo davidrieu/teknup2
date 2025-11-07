@@ -263,6 +263,15 @@ class Storage {
 
 		teknup_ai_mastering()->log( "Streaming file {$filename} to user", 'info' );
 
+		// Track first download (only for mastered files and user downloads)
+		if ( ! $is_temp && $type === 'mastered' && isset( $data['user_id'] ) ) {
+			$user_id = $data['user_id'];
+			teknup_ai_mastering()->subscriptions->mark_first_download( $user_id );
+
+			// Use a credit when downloading completed master
+			teknup_ai_mastering()->subscriptions->use_credit( $user_id );
+		}
+
 		// Stream file
 		$this->stream_file( $filepath, $filename );
 	}

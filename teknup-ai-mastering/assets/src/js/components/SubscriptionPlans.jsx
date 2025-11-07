@@ -27,7 +27,7 @@ const SubscriptionPlans = () => {
 		}
 	};
 
-	const handleSubscribe = (productId) => {
+	const handlePurchase = (productId) => {
 		// Add to cart and redirect to checkout
 		const checkoutUrl = `${teknupData.siteUrl}/checkout/?add-to-cart=${productId}`;
 		window.location.href = checkoutUrl;
@@ -37,7 +37,7 @@ const SubscriptionPlans = () => {
 		return (
 			<div className="teknup-plans-loading">
 				<div className="teknup-spinner"></div>
-				<p>Loading subscription plans...</p>
+				<p>Loading credit packs...</p>
 			</div>
 		);
 	}
@@ -53,7 +53,7 @@ const SubscriptionPlans = () => {
 	if (plans.length === 0) {
 		return (
 			<div className="teknup-message teknup-message-warning">
-				No subscription plans available at the moment.
+				No credit packs available at the moment.
 			</div>
 		);
 	}
@@ -66,54 +66,43 @@ const SubscriptionPlans = () => {
 					className={`teknup-plan-card ${plan.featured ? 'featured' : ''}`}
 				>
 					{plan.featured && (
-						<div className="teknup-plan-badge">Most Popular</div>
+						<div className="teknup-plan-badge">Best Value</div>
 					)}
 
 					<div className="teknup-plan-header">
 						<h3>{plan.name}</h3>
 						<div className="teknup-plan-price">
-							{plan.price === 0 || plan.price === '0' ? (
-								<>
-									<span className="price-amount">Free</span>
-								</>
-							) : (
-								<>
-									<span className="price-currency">{plan.currency}</span>
-									<span className="price-amount">{plan.price}</span>
-									<span className="price-period">/{plan.period}</span>
-								</>
-							)}
+							<span className="price-currency">{plan.currency}</span>
+							<span className="price-amount">{plan.price}</span>
 						</div>
 					</div>
 
 					<div className="teknup-plan-features">
 						<ul>
-							<li>
-								<span className="feature-icon">🎵</span>
-								<strong>{plan.limit === 'unlimited' ? 'Unlimited' : plan.limit}</strong>{' '}
-								{plan.limit === 'unlimited' ? 'tracks' : 'tracks per month'}
-							</li>
-							<li>
-								<span className="feature-icon">⚡</span>
-								AI-powered mastering with Dolby.io
-							</li>
-							<li>
-								<span className="feature-icon">🎚️</span>
-								Advanced settings (intensity, genre, LUFS)
-							</li>
-							<li>
-								<span className="feature-icon">📊</span>
-								Dashboard & statistics
-							</li>
-							{plan.limit === 'unlimited' && (
+							{plan.features && plan.features.length > 0 ? (
+								plan.features.map((feature, index) => (
+									<li key={index}>
+										<span className="feature-icon">✓</span>
+										{feature}
+									</li>
+								))
+							) : (
 								<>
 									<li>
-										<span className="feature-icon">⏱️</span>
-										Priority processing
+										<span className="feature-icon">🎵</span>
+										{plan.credits} master credits
 									</li>
 									<li>
-										<span className="feature-icon">💾</span>
-										Extended file storage
+										<span className="feature-icon">⚡</span>
+										Professional AI mastering
+									</li>
+									<li>
+										<span className="feature-icon">🎚️</span>
+										All audio formats supported
+									</li>
+									<li>
+										<span className="feature-icon">📊</span>
+										High-quality export
 									</li>
 								</>
 							)}
@@ -122,9 +111,9 @@ const SubscriptionPlans = () => {
 
 					<button
 						className="teknup-button teknup-button-primary"
-						onClick={() => handleSubscribe(plan.id)}
+						onClick={() => handlePurchase(plan.id)}
 					>
-						{plan.price === 0 || plan.price === '0' ? 'Start Free Trial' : 'Subscribe Now'}
+						Purchase {plan.credits} Masters
 					</button>
 				</div>
 			))}

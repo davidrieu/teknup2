@@ -854,33 +854,19 @@ class REST {
 	 * @return WP_REST_Response Response object.
 	 */
 	public function get_subscription_plans() {
-		if ( ! class_exists( 'WC_Subscriptions' ) ) {
-			return new \WP_REST_Response(
-				array( 'message' => __( 'WooCommerce Subscriptions is not active', 'teknup-ai-mastering' ) ),
-				500
-			);
-		}
-
-		$product_ids = get_option( 'teknup_subscription_products', array() );
+		// Get credit pack products
+		$product_ids = get_option( 'teknup_credit_products', array() );
 
 		if ( empty( $product_ids ) ) {
 			return new \WP_REST_Response(
-				array( 'message' => __( 'No subscription plans available', 'teknup-ai-mastering' ) ),
+				array( 'message' => __( 'No credit packs available', 'teknup-ai-mastering' ) ),
 				404
 			);
 		}
 
 		$plans = array();
 
-		// Plan limits mapping
-		$plan_limits = array(
-			'Free Trial'   => 3,
-			'Starter Plan' => 20,
-			'Pro Plan'     => 'unlimited',
-			'Label Plan'   => 'unlimited',
-		);
-
-		foreach ( $product_ids as $name => $product_id ) {
+		foreach ( $product_ids as $slug => $product_id ) {
 			$product = wc_get_product( $product_id );
 
 			if ( ! $product ) {
@@ -888,20 +874,25 @@ class REST {
 			}
 
 			$price = $product->get_price();
-			$period = '';
+			$credits = (int) $product->get_meta( '_teknup_credits', true );
 
-			if ( is_a( $product, 'WC_Product_Subscription' ) ) {
-				$period = $product->get_meta( '_subscription_period' );
+			// Parse features from short description
+			$features = array();
+			$short_desc = $product->get_short_description();
+			if ( preg_match_all( '/<li>(.*?)<\/li>/s', $short_desc, $matches ) ) {
+				$features = array_map( 'wp_strip_all_tags', $matches[1] );
 			}
 
 			$plans[] = array(
 				'id'       => $product_id,
-				'name'     => $name,
+				'slug'     => $slug,
+				'name'     => $product->get_name(),
 				'price'    => $price,
 				'currency' => get_woocommerce_currency_symbol(),
-				'period'   => $period ?: 'month',
-				'limit'    => isset( $plan_limits[ $name ] ) ? $plan_limits[ $name ] : 'unlimited',
-				'featured' => $name === 'Pro Plan', // Mark Pro Plan as featured
+				'credits'  => $credits,
+				'features' => $features,
+				'featured' => $slug === 'pack_6', // Mark 6-pack as featured (best value)
+				'description' => wp_strip_all_tags( $product->get_description() ),
 			);
 		}
 
