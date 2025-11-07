@@ -29,6 +29,13 @@ const Upload = () => {
 			});
 			const data = await response.json();
 			setQuota(data);
+
+			// If quota is exhausted and plan is 'none', reload to show subscription page
+			if (data.plan === 'none' || (data.remaining === 0 && !data.unlimited && data.plan === 'free_trial')) {
+				setTimeout(() => {
+					window.location.reload();
+				}, 2000); // Wait 2 seconds to let user see the completion message
+			}
 		} catch (err) {
 			console.error('Failed to fetch quota:', err);
 		}
