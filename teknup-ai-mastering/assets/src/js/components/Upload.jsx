@@ -7,6 +7,7 @@ const Upload = () => {
 	const [job, setJob] = useState(null);
 	const [error, setError] = useState(null);
 	const [quota, setQuota] = useState(null);
+	const [quotaExhausted, setQuotaExhausted] = useState(false);
 	const [settings, setSettings] = useState({
 		intensity: 'high',
 		genre: 'techno',
@@ -30,11 +31,9 @@ const Upload = () => {
 			const data = await response.json();
 			setQuota(data);
 
-			// If quota is exhausted and plan is 'none', reload to show subscription page
+			// Check if quota is exhausted (don't reload yet, let user download first)
 			if (data.plan === 'none' || (data.remaining === 0 && !data.unlimited && data.plan === 'free_trial')) {
-				setTimeout(() => {
-					window.location.reload();
-				}, 2000); // Wait 2 seconds to let user see the completion message
+				setQuotaExhausted(true);
 			}
 		} catch (err) {
 			console.error('Failed to fetch quota:', err);
@@ -155,6 +154,15 @@ const Upload = () => {
 		setProgress(0);
 		setError(null);
 		setUploading(false);
+	};
+
+	const handleUploadAnother = () => {
+		// If quota is exhausted, reload page to show subscription page
+		if (quotaExhausted) {
+			window.location.reload();
+		} else {
+			resetUpload();
+		}
 	};
 
 	return (
@@ -313,18 +321,36 @@ const Upload = () => {
 					)}
 
 					{job.status === 'completed' && job.download_url && (
-						<div style={{ marginTop: '24px' }}>
-							<a href={job.download_url} className="teknup-button" download>
-								Download Mastered Track
-							</a>
-							<button
-								className="teknup-button teknup-button-secondary"
-								onClick={resetUpload}
-								style={{ marginLeft: '16px' }}
-							>
-								Upload Another
-							</button>
-						</div>
+						<>
+							{quotaExhausted && (
+								<div style={{
+									marginTop: '16px',
+									padding: '16px',
+									background: 'rgba(255, 152, 0, 0.1)',
+									borderRadius: '8px',
+									border: '1px solid rgba(255, 152, 0, 0.3)'
+								}}>
+									<p style={{ margin: 0, color: '#FF9800', fontWeight: 'bold' }}>
+										⚠️ Free Trial Complete
+									</p>
+									<p style={{ margin: '8px 0 0 0', fontSize: '14px' }}>
+										Download your mastered track below. To master more tracks, you'll need to subscribe to a plan.
+									</p>
+								</div>
+							)}
+							<div style={{ marginTop: '24px' }}>
+								<a href={job.download_url} className="teknup-button" download>
+									Download Mastered Track
+								</a>
+								<button
+									className="teknup-button teknup-button-secondary"
+									onClick={handleUploadAnother}
+									style={{ marginLeft: '16px' }}
+								>
+									{quotaExhausted ? 'View Subscription Plans' : 'Upload Another'}
+								</button>
+							</div>
+						</>
 					)}
 
 					{job.status === 'failed' && (
