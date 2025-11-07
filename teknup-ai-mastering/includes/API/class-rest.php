@@ -43,7 +43,7 @@ class REST {
 			array(
 				'methods' => 'GET',
 				'callback' => array( $this, 'get_quota' ),
-				'permission_callback' => array( $this, 'check_subscription_permission' ),
+				'permission_callback' => array( $this, 'check_user_permission' ), // Allow checking quota even without subscription
 			)
 		);
 
@@ -65,7 +65,7 @@ class REST {
 			array(
 				'methods' => 'GET',
 				'callback' => array( $this, 'get_job' ),
-				'permission_callback' => array( $this, 'check_subscription_permission' ),
+				'permission_callback' => array( $this, 'check_user_permission' ), // Allow viewing own jobs even without subscription
 				'args' => array(
 					'id' => array(
 						'required' => true,
@@ -82,7 +82,7 @@ class REST {
 			array(
 				'methods' => 'GET',
 				'callback' => array( $this, 'get_jobs' ),
-				'permission_callback' => array( $this, 'check_subscription_permission' ),
+				'permission_callback' => array( $this, 'check_user_permission' ), // Allow viewing own jobs even without subscription
 			)
 		);
 
