@@ -1284,8 +1284,8 @@
 	-webkit-appearance: none;
 	appearance: none;
 	width: 3px;
-	height: 40px;
-	background: #FFFFFF;
+	height: 20px;
+	background: #000000;
 	border-radius: 0;
 	cursor: pointer;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -1293,14 +1293,14 @@
 }
 
 .teknup-intensity-slider::-webkit-slider-thumb:hover {
-	height: 45px;
+	height: 25px;
 	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
 }
 
 .teknup-intensity-slider::-moz-range-thumb {
 	width: 3px;
-	height: 40px;
-	background: #FFFFFF;
+	height: 20px;
+	background: #000000;
 	border-radius: 0;
 	cursor: pointer;
 	border: none;
@@ -1309,7 +1309,7 @@
 }
 
 .teknup-intensity-slider::-moz-range-thumb:hover {
-	height: 45px;
+	height: 25px;
 	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
 }
 
