@@ -521,11 +521,24 @@
 	align-items: center;
 	gap: var(--teknup-spacing-sm);
 	border-radius: var(--teknup-radius-md);
+	outline: none;
+	box-shadow: none;
 }
 
 .teknup-tab:hover {
 	color: var(--teknup-white);
 	background: rgba(157, 44, 32, 0.2);
+	box-shadow: none;
+}
+
+.teknup-tab:focus {
+	outline: none;
+	box-shadow: none;
+}
+
+.teknup-tab:active {
+	outline: none;
+	box-shadow: none;
 }
 
 .teknup-tab.active {
