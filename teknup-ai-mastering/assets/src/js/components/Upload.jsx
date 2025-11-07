@@ -249,31 +249,48 @@ const Upload = () => {
 
 							<div style={{ marginTop: '24px' }}>
 								<label className="teknup-label">Mastering Intensity</label>
-								<select
-									className="teknup-select"
-									value={settings.intensity}
-									onChange={(e) => setSettings({ ...settings, intensity: e.target.value })}
-								>
-									<option value="light">Light</option>
-									<option value="medium">Medium</option>
-									<option value="heavy">Heavy</option>
-								</select>
+								<div className="teknup-intensity-slider-container">
+									<input
+										type="range"
+										className="teknup-intensity-slider"
+										min="0"
+										max="2"
+										step="1"
+										value={settings.intensity === 'light' ? 0 : settings.intensity === 'medium' ? 1 : 2}
+										onChange={(e) => {
+											const values = ['light', 'medium', 'heavy'];
+											setSettings({ ...settings, intensity: values[parseInt(e.target.value)] });
+										}}
+									/>
+									<div className="teknup-intensity-labels">
+										<span className={settings.intensity === 'light' ? 'active' : ''}>Light</span>
+										<span className={settings.intensity === 'medium' ? 'active' : ''}>Medium</span>
+										<span className={settings.intensity === 'heavy' ? 'active' : ''}>Heavy</span>
+									</div>
+								</div>
 							</div>
 
-							<div style={{ marginTop: '16px' }}>
+							<div style={{ marginTop: '24px' }}>
 								<label className="teknup-label">Techno Style</label>
-								<select
-									className="teknup-select"
-									value={settings.genre}
-									onChange={(e) => setSettings({ ...settings, genre: e.target.value })}
-								>
-									<option value="techno">Techno</option>
-									<option value="minimal_techno">Minimal Techno</option>
-									<option value="hard_techno">Hard Techno</option>
-									<option value="industrial_techno">Industrial Techno</option>
-									<option value="melodic_techno">Melodic Techno</option>
-									<option value="acid_techno">Acid Techno</option>
-								</select>
+								<div className="teknup-genre-buttons">
+									{[
+										{ value: 'techno', label: 'Techno' },
+										{ value: 'minimal_techno', label: 'Minimal' },
+										{ value: 'hard_techno', label: 'Hard' },
+										{ value: 'industrial_techno', label: 'Industrial' },
+										{ value: 'melodic_techno', label: 'Melodic' },
+										{ value: 'acid_techno', label: 'Acid' }
+									].map((genre) => (
+										<button
+											key={genre.value}
+											type="button"
+											className={`teknup-genre-button ${settings.genre === genre.value ? 'active' : ''}`}
+											onClick={() => setSettings({ ...settings, genre: genre.value })}
+										>
+											{genre.label}
+										</button>
+									))}
+								</div>
 							</div>
 
 							<div style={{ marginTop: '16px' }}>
