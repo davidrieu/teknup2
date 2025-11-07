@@ -87,9 +87,10 @@
 	letter-spacing: 1px;
 	cursor: pointer;
 	transition: all 0.3s ease;
-	box-shadow: var(--teknup-shadow-card);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 	position: relative;
 	overflow: hidden;
+	outline: none;
 }
 
 .teknup-button::before {
@@ -112,6 +113,17 @@
 	transform: translateY(-2px);
 }
 
+.teknup-button:focus {
+	outline: none;
+	box-shadow: var(--teknup-shadow-glow);
+}
+
+.teknup-button:active {
+	outline: none;
+	box-shadow: 0 0 15px rgba(157, 44, 32, 0.6);
+	transform: translateY(0);
+}
+
 .teknup-button:disabled {
 	opacity: 0.5;
 	cursor: not-allowed;
@@ -122,12 +134,24 @@
 	background: transparent;
 	border: 1px solid var(--primary);
 	color: var(--primary);
+	outline: none;
 }
 
 .teknup-button-secondary:hover {
 	background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
 	color: var(--teknup-white);
 	border-color: var(--secondary);
+	box-shadow: var(--teknup-shadow-glow);
+}
+
+.teknup-button-secondary:focus {
+	outline: none;
+	box-shadow: 0 0 0 2px rgba(157, 44, 32, 0.3);
+}
+
+.teknup-button-secondary:active {
+	outline: none;
+	box-shadow: 0 0 0 2px rgba(157, 44, 32, 0.5);
 }
 
 /* Upload Zone with floating animation */
@@ -333,12 +357,18 @@
 	align-items: center;
 	justify-content: center;
 	transition: all 0.3s ease;
-	box-shadow: var(--teknup-shadow-card);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+	outline: none;
 }
 
 .teknup-play-button:hover {
 	box-shadow: var(--teknup-shadow-glow);
 	transform: scale(1.1);
+}
+
+.teknup-play-button:focus {
+	outline: none;
+	box-shadow: var(--teknup-shadow-glow);
 }
 
 .teknup-timeline {
