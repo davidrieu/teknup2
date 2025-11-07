@@ -37,7 +37,7 @@ const SubscriptionPlans = () => {
 		return (
 			<div className="teknup-plans-loading">
 				<div className="teknup-spinner"></div>
-				<p>Loading credit packs...</p>
+				<p>Loading subscription plans...</p>
 			</div>
 		);
 	}
@@ -53,7 +53,7 @@ const SubscriptionPlans = () => {
 	if (plans.length === 0) {
 		return (
 			<div className="teknup-message teknup-message-warning">
-				No credit packs available at the moment.
+				No subscription plans available at the moment.
 			</div>
 		);
 	}
@@ -74,6 +74,7 @@ const SubscriptionPlans = () => {
 						<div className="teknup-plan-price">
 							<span className="price-currency">{plan.currency}</span>
 							<span className="price-amount">{plan.price}</span>
+							<span className="price-period">/month</span>
 						</div>
 					</div>
 
@@ -90,7 +91,7 @@ const SubscriptionPlans = () => {
 								<>
 									<li>
 										<span className="feature-icon">🎵</span>
-										{plan.credits} master credits
+										{plan.monthly_limit} masters per month
 									</li>
 									<li>
 										<span className="feature-icon">⚡</span>
@@ -113,7 +114,7 @@ const SubscriptionPlans = () => {
 						className="teknup-button teknup-button-primary"
 						onClick={() => handlePurchase(plan.id)}
 					>
-						Purchase {plan.credits} Masters
+						Subscribe Now
 					</button>
 				</div>
 			))}

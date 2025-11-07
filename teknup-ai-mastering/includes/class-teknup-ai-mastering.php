@@ -123,9 +123,6 @@ final class Teknup_AI_Mastering {
 	private function init_hooks() {
 		add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
 		add_action( 'init', array( $this, 'init' ) );
-
-		// Hook into WooCommerce order completion to add credits
-		add_action( 'woocommerce_order_status_completed', array( 'Teknup\Core\Installer', 'add_credits_on_purchase' ) );
 	}
 
 	/**

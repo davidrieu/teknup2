@@ -6,8 +6,8 @@ const NoSubscription = () => {
 		<div className="teknup-no-subscription">
 			<div className="teknup-no-subscription-header">
 				<div className="teknup-no-subscription-icon">🔒</div>
-				<h2>Credits Required</h2>
-				<p>You need master credits to use Teknup AI Mastering</p>
+				<h2>Active Subscription Required</h2>
+				<p>You need an active subscription to use Teknup AI Mastering</p>
 			</div>
 
 			<div className="teknup-no-subscription-content">
@@ -46,13 +46,13 @@ const NoSubscription = () => {
 				</div>
 
 				<div className="teknup-no-subscription-plans">
-					<h3>Choose Your Credit Pack</h3>
+					<h3>Choose Your Plan</h3>
 					<SubscriptionPlans />
 				</div>
 			</div>
 
 			<div className="teknup-no-subscription-footer">
-				<p>Already purchased? Try refreshing the page or <a href="#" onClick={(e) => { e.preventDefault(); window.location.reload(); }}>click here</a></p>
+				<p>Already subscribed? Try refreshing the page or <a href="#" onClick={(e) => { e.preventDefault(); window.location.reload(); }}>click here</a></p>
 			</div>
 		</div>
 	);

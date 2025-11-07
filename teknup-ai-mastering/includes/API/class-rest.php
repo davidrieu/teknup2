@@ -854,12 +854,12 @@ class REST {
 	 * @return WP_REST_Response Response object.
 	 */
 	public function get_subscription_plans() {
-		// Get credit pack products
-		$product_ids = get_option( 'teknup_credit_products', array() );
+		// Get subscription products
+		$product_ids = get_option( 'teknup_subscription_products', array() );
 
 		if ( empty( $product_ids ) ) {
 			return new \WP_REST_Response(
-				array( 'message' => __( 'No credit packs available', 'teknup-ai-mastering' ) ),
+				array( 'message' => __( 'No subscription plans available', 'teknup-ai-mastering' ) ),
 				404
 			);
 		}
@@ -874,7 +874,7 @@ class REST {
 			}
 
 			$price = $product->get_price();
-			$credits = (int) $product->get_meta( '_teknup_credits', true );
+			$monthly_limit = (int) $product->get_meta( '_teknup_monthly_limit', true );
 
 			// Parse features from short description
 			$features = array();
@@ -884,15 +884,16 @@ class REST {
 			}
 
 			$plans[] = array(
-				'id'       => $product_id,
-				'slug'     => $slug,
-				'name'     => $product->get_name(),
-				'price'    => $price,
-				'currency' => get_woocommerce_currency_symbol(),
-				'credits'  => $credits,
-				'features' => $features,
-				'featured' => $slug === 'pack_6', // Mark 6-pack as featured (best value)
-				'description' => wp_strip_all_tags( $product->get_description() ),
+				'id'            => $product_id,
+				'slug'          => $slug,
+				'name'          => $product->get_name(),
+				'price'         => $price,
+				'currency'      => get_woocommerce_currency_symbol(),
+				'monthly_limit' => $monthly_limit,
+				'billing_period' => 'month',
+				'features'      => $features,
+				'featured'      => $slug === 'pro', // Mark Pro as featured (best value)
+				'description'   => wp_strip_all_tags( $product->get_description() ),
 			);
 		}
 

@@ -189,10 +189,9 @@ class Settings {
 	public function render_woocommerce_products_field() {
 		$existing_products = get_option( 'teknup_subscription_products', array() );
 		$products_data = array(
-			'free_trial' => array( 'name' => 'Teknup Free Trial', 'price' => '0€' ),
-			'starter' => array( 'name' => 'Teknup Starter', 'price' => '19$' ),
-			'pro' => array( 'name' => 'Teknup Pro', 'price' => '39$' ),
-			'label' => array( 'name' => 'Teknup Label', 'price' => '99$' ),
+			'starter' => array( 'name' => 'Teknup Starter', 'price' => '$9.99/month', 'masters' => '3 masters' ),
+			'pro' => array( 'name' => 'Teknup Pro', 'price' => '$14.99/month', 'masters' => '6 masters' ),
+			'premium' => array( 'name' => 'Teknup Premium', 'price' => '$24.99/month', 'masters' => '12 masters' ),
 		);
 		?>
 		<div id="teknup-products-status">
@@ -215,10 +214,11 @@ class Settings {
 					<div class="notice notice-success inline">
 						<p><strong><?php esc_html_e( 'Products Created Successfully', 'teknup-ai-mastering' ); ?></strong></p>
 					</div>
-					<table class="widefat" style="margin-top: 10px; max-width: 600px;">
+					<table class="widefat" style="margin-top: 10px; max-width: 700px;">
 						<thead>
 							<tr>
 								<th><?php esc_html_e( 'Product', 'teknup-ai-mastering' ); ?></th>
+								<th><?php esc_html_e( 'Masters/Month', 'teknup-ai-mastering' ); ?></th>
 								<th><?php esc_html_e( 'Price', 'teknup-ai-mastering' ); ?></th>
 								<th><?php esc_html_e( 'Status', 'teknup-ai-mastering' ); ?></th>
 								<th><?php esc_html_e( 'Action', 'teknup-ai-mastering' ); ?></th>
@@ -228,6 +228,7 @@ class Settings {
 							<?php foreach ( $products_data as $slug => $data ) : ?>
 								<tr>
 									<td><?php echo esc_html( $data['name'] ); ?></td>
+									<td><?php echo esc_html( $data['masters'] ); ?></td>
 									<td><?php echo esc_html( $data['price'] ); ?></td>
 									<td>
 										<?php if ( isset( $existing_products[ $slug ] ) ) : ?>
@@ -259,7 +260,7 @@ class Settings {
 		</p>
 
 		<p class="description">
-			<?php esc_html_e( 'This will create 4 subscription products: Free Trial (0€), Starter (19$), Pro (39$), and Label (99$). Existing products will not be duplicated.', 'teknup-ai-mastering' ); ?>
+			<?php esc_html_e( 'This will create 3 monthly subscription products: Starter (3 masters @ $9.99/month), Pro (6 masters @ $14.99/month), and Premium (12 masters @ $24.99/month). Users get 1 free trial master before needing to subscribe.', 'teknup-ai-mastering' ); ?>
 		</p>
 		<?php
 	}

@@ -203,14 +203,21 @@ class Installer {
 	}
 
 	/**
-	 * Create WooCommerce credit pack products
+	 * Create WooCommerce subscription products
 	 *
 	 * @param bool $force Force recreation even if products exist.
 	 */
 	public static function create_woocommerce_products( $force = false ) {
+		// Check if WooCommerce Subscriptions is active
+		if ( ! class_exists( 'WC_Subscriptions' ) ) {
+			// Store flag to create products later when Subscriptions is activated
+			update_option( 'teknup_needs_products_creation', true );
+			return;
+		}
+
 		// Check if products already exist (unless forced)
 		if ( ! $force ) {
-			$existing_products = get_option( 'teknup_credit_products', array() );
+			$existing_products = get_option( 'teknup_subscription_products', array() );
 			if ( ! empty( $existing_products ) ) {
 				return; // Products already created
 			}
@@ -218,48 +225,60 @@ class Installer {
 
 		$products_created = array();
 
-		// Define credit pack products
+		// Define subscription products with new pricing
 		$products = array(
-			'pack_3' => array(
-				'name' => 'Teknup 3 Masters Pack',
+			'starter' => array(
+				'name' => 'Teknup Starter',
 				'price' => 9.99,
-				'credits' => 3,
-				'description' => 'Get 3 professional AI masters for your tracks. Perfect for trying our service.',
+				'monthly_limit' => 3,
+				'description' => 'Perfect for hobbyists. Get 3 professional AI masters every month.',
+				'billing_period' => 'month',
+				'billing_interval' => 1,
 				'features' => array(
-					'3 master credits',
+					'3 masters per month',
 					'Professional AI mastering',
 					'All audio formats supported',
-					'High-quality export',
+					'Advanced intensity controls',
+					'Genre-specific presets',
+					'Download history',
 					'Email support',
 				),
 			),
-			'pack_6' => array(
-				'name' => 'Teknup 6 Masters Pack',
+			'pro' => array(
+				'name' => 'Teknup Pro',
 				'price' => 14.99,
-				'credits' => 6,
-				'description' => 'Get 6 professional AI masters. Best value for regular producers.',
+				'monthly_limit' => 6,
+				'description' => 'Best value for regular producers. Get 6 professional AI masters every month.',
+				'billing_period' => 'month',
+				'billing_interval' => 1,
 				'features' => array(
-					'6 master credits',
+					'6 masters per month',
 					'Professional AI mastering',
 					'All audio formats supported',
-					'High-quality export',
+					'Advanced intensity controls',
+					'Genre-specific presets',
+					'Unlimited revisions',
 					'Priority email support',
-					'Save 17% vs 3-pack',
+					'Download history',
 				),
 			),
-			'pack_12' => array(
-				'name' => 'Teknup 12 Masters Pack',
+			'premium' => array(
+				'name' => 'Teknup Premium',
 				'price' => 24.99,
-				'credits' => 12,
-				'description' => 'Get 12 professional AI masters. Maximum value for serious producers.',
+				'monthly_limit' => 12,
+				'description' => 'For serious producers. Get 12 professional AI masters every month.',
+				'billing_period' => 'month',
+				'billing_interval' => 1,
 				'features' => array(
-					'12 master credits',
+					'12 masters per month',
 					'Professional AI mastering',
 					'All audio formats supported',
-					'High-quality export',
+					'Advanced controls',
+					'Genre-specific presets',
+					'Unlimited revisions',
 					'Priority support',
-					'Save 38% vs 3-pack',
-					'Best value!',
+					'Extended file storage',
+					'Download history',
 				),
 			),
 		);
@@ -267,13 +286,18 @@ class Installer {
 		foreach ( $products as $slug => $product_data ) {
 			// Check if product already exists by slug
 			$existing = get_page_by_path( 'teknup-' . $slug, OBJECT, 'product' );
-			if ( $existing ) {
+			if ( $existing && ! $force ) {
 				$products_created[ $slug ] = $existing->ID;
 				continue;
 			}
 
-			// Create simple product (not subscription)
-			$product = new \WC_Product_Simple();
+			// If forcing and product exists, delete it first
+			if ( $existing && $force ) {
+				wp_delete_post( $existing->ID, true );
+			}
+
+			// Create product
+			$product = new \WC_Product_Subscription();
 
 			// Basic info
 			$product->set_name( $product_data['name'] );
@@ -293,13 +317,24 @@ class Installer {
 			// Price
 			$product->set_regular_price( $product_data['price'] );
 
-			// Store credits in product meta
-			$product->update_meta_data( '_teknup_credits', $product_data['credits'] );
-			$product->update_meta_data( '_teknup_pack_slug', $slug );
+			// Subscription settings
+			$product->update_meta_data( '_subscription_price', $product_data['price'] );
+			$product->update_meta_data( '_subscription_period', $product_data['billing_period'] );
+			$product->update_meta_data( '_subscription_period_interval', $product_data['billing_interval'] );
+			$product->update_meta_data( '_subscription_length', 0 ); // Never expires
 
-			// Virtual product (no shipping)
+			// Sign-up fee
+			$product->update_meta_data( '_subscription_sign_up_fee', 0 );
+
+			// Limit subscriptions
+			$product->update_meta_data( '_subscription_limit', 'active' ); // Only one active subscription
+
+			// Teknup plan slug and monthly limit
+			$product->update_meta_data( '_teknup_plan_slug', $slug );
+			$product->update_meta_data( '_teknup_monthly_limit', $product_data['monthly_limit'] );
+
+			// Virtual product
 			$product->set_virtual( true );
-			$product->set_downloadable( false );
 
 			// Save product
 			$product_id = $product->save();
@@ -316,15 +351,14 @@ class Installer {
 		}
 
 		// Save product IDs
-		update_option( 'teknup_credit_products', $products_created );
+		update_option( 'teknup_subscription_products', $products_created );
 
 		// Log creation
 		if ( function_exists( 'teknup_ai_mastering' ) ) {
-			teknup_ai_mastering()->log( 'WooCommerce credit pack products created: ' . implode( ', ', array_keys( $products_created ) ), 'info' );
+			teknup_ai_mastering()->log( 'WooCommerce subscription products created: ' . implode( ', ', array_keys( $products_created ) ), 'info' );
 		}
 
-		// Hook into WooCommerce order completion to add credits
-		add_action( 'woocommerce_order_status_completed', array( __CLASS__, 'add_credits_on_purchase' ) );
+		return $products_created;
 	}
 
 	/**
@@ -346,7 +380,7 @@ class Installer {
 			'product_cat',
 			array(
 				'slug' => 'teknup-mastering',
-				'description' => 'Professional AI-powered audio mastering credit packs',
+				'description' => 'Professional AI-powered audio mastering subscription plans',
 			)
 		);
 
@@ -355,72 +389,5 @@ class Installer {
 		}
 
 		return $result['term_id'];
-	}
-
-	/**
-	 * Add credits to user when they purchase a pack
-	 *
-	 * @param int $order_id Order ID.
-	 */
-	public static function add_credits_on_purchase( $order_id ) {
-		$order = wc_get_order( $order_id );
-
-		if ( ! $order ) {
-			return;
-		}
-
-		$user_id = $order->get_user_id();
-
-		if ( ! $user_id ) {
-			return;
-		}
-
-		// Check if credits already added
-		$credits_added = $order->get_meta( '_teknup_credits_added', true );
-		if ( $credits_added ) {
-			return; // Already processed
-		}
-
-		$total_credits = 0;
-
-		// Loop through order items
-		foreach ( $order->get_items() as $item ) {
-			$product_id = $item->get_product_id();
-			$product = wc_get_product( $product_id );
-
-			if ( ! $product ) {
-				continue;
-			}
-
-			// Check if this is a Teknup credit pack
-			$credits = $product->get_meta( '_teknup_credits', true );
-
-			if ( $credits ) {
-				$quantity = $item->get_quantity();
-				$credits_to_add = (int) $credits * $quantity;
-				$total_credits += $credits_to_add;
-			}
-		}
-
-		if ( $total_credits > 0 ) {
-			// Get current credits
-			$current_credits = (int) get_user_meta( $user_id, 'teknup_credits', true );
-
-			// Add new credits
-			$new_credits = $current_credits + $total_credits;
-			update_user_meta( $user_id, 'teknup_credits', $new_credits );
-
-			// Mark as processed
-			$order->update_meta_data( '_teknup_credits_added', true );
-			$order->save();
-
-			// Log
-			if ( function_exists( 'teknup_ai_mastering' ) ) {
-				teknup_ai_mastering()->log(
-					sprintf( 'Added %d credits to user %d (order %d). New total: %d', $total_credits, $user_id, $order_id, $new_credits ),
-					'info'
-				);
-			}
-		}
 	}
 }
