@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import SubscriptionPlans from './SubscriptionPlans';
 
 const Upload = () => {
 	const [file, setFile] = useState(null);
@@ -8,6 +9,7 @@ const Upload = () => {
 	const [error, setError] = useState(null);
 	const [quota, setQuota] = useState(null);
 	const [quotaExhausted, setQuotaExhausted] = useState(false);
+	const [showSubscriptionPopup, setShowSubscriptionPopup] = useState(false);
 	const [settings, setSettings] = useState({
 		intensity: 'high',
 		genre: 'techno',
@@ -162,6 +164,16 @@ const Upload = () => {
 			window.location.reload();
 		} else {
 			resetUpload();
+		}
+	};
+
+	const handleDownload = (e) => {
+		// If quota is exhausted, show subscription popup after download
+		if (quotaExhausted) {
+			// Let the download happen first, then show popup
+			setTimeout(() => {
+				setShowSubscriptionPopup(true);
+			}, 1000); // Wait 1 second to ensure download started
 		}
 	};
 
@@ -339,16 +351,23 @@ const Upload = () => {
 								</div>
 							)}
 							<div style={{ marginTop: '24px' }}>
-								<a href={job.download_url} className="teknup-button" download>
+								<a
+									href={job.download_url}
+									className="teknup-button"
+									download
+									onClick={handleDownload}
+								>
 									Download Mastered Track
 								</a>
-								<button
-									className="teknup-button teknup-button-secondary"
-									onClick={handleUploadAnother}
-									style={{ marginLeft: '16px' }}
-								>
-									{quotaExhausted ? 'View Subscription Plans' : 'Upload Another'}
-								</button>
+								{!quotaExhausted && (
+									<button
+										className="teknup-button teknup-button-secondary"
+										onClick={resetUpload}
+										style={{ marginLeft: '16px' }}
+									>
+										Upload Another
+									</button>
+								)}
 							</div>
 						</>
 					)}
@@ -367,6 +386,86 @@ const Upload = () => {
 			{error && (
 				<div className="teknup-card" style={{ marginTop: '24px', borderColor: '#F44336' }}>
 					<p style={{ color: '#F44336' }}>{error}</p>
+				</div>
+			)}
+
+			{/* Subscription Popup Modal */}
+			{showSubscriptionPopup && (
+				<div style={{
+					position: 'fixed',
+					top: 0,
+					left: 0,
+					right: 0,
+					bottom: 0,
+					backgroundColor: 'rgba(0, 0, 0, 0.8)',
+					display: 'flex',
+					alignItems: 'center',
+					justifyContent: 'center',
+					zIndex: 9999,
+					padding: '20px'
+				}}>
+					<div style={{
+						background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+						borderRadius: '16px',
+						padding: '32px',
+						maxWidth: '900px',
+						width: '100%',
+						maxHeight: '90vh',
+						overflowY: 'auto',
+						position: 'relative',
+						border: '1px solid rgba(255, 255, 255, 0.1)',
+						boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)'
+					}}>
+						{/* Close button */}
+						<button
+							onClick={() => setShowSubscriptionPopup(false)}
+							style={{
+								position: 'absolute',
+								top: '16px',
+								right: '16px',
+								background: 'rgba(255, 255, 255, 0.1)',
+								border: 'none',
+								color: '#fff',
+								fontSize: '24px',
+								width: '40px',
+								height: '40px',
+								borderRadius: '50%',
+								cursor: 'pointer',
+								display: 'flex',
+								alignItems: 'center',
+								justifyContent: 'center',
+								transition: 'all 0.3s ease'
+							}}
+							onMouseOver={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
+							onMouseOut={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.1)'}
+						>
+							×
+						</button>
+
+						{/* Popup header */}
+						<div style={{ textAlign: 'center', marginBottom: '32px' }}>
+							<div style={{ fontSize: '48px', marginBottom: '16px' }}>🎉</div>
+							<h2 style={{ fontSize: '28px', marginBottom: '8px', color: '#fff' }}>
+								Your Track is Ready!
+							</h2>
+							<p style={{ fontSize: '16px', color: 'rgba(255, 255, 255, 0.7)' }}>
+								To continue mastering more tracks, choose a subscription plan below
+							</p>
+						</div>
+
+						{/* Subscription plans */}
+						<SubscriptionPlans />
+
+						{/* Footer */}
+						<div style={{ textAlign: 'center', marginTop: '24px', paddingTop: '24px', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+							<button
+								onClick={() => setShowSubscriptionPopup(false)}
+								className="teknup-button teknup-button-secondary"
+							>
+								Maybe Later
+							</button>
+						</div>
+					</div>
 				</div>
 			)}
 		</div>
