@@ -179,25 +179,15 @@ const Upload = () => {
 
 	return (
 		<div className="teknup-upload-container">
-			<h2 className="teknup-heading">Upload Your Track</h2>
-
-			{quota && (
-				<div className="teknup-quota-info teknup-card" style={{ marginBottom: '24px' }}>
-					<h3>Your Plan: {quota.plan_name}</h3>
-					<div style={{ marginTop: '8px' }}>
-						{quota.unlimited ? (
-							<p>Unlimited masters per month</p>
-						) : (
-							<>
-								<p>Used: {quota.usage} / {quota.limit} masters this month</p>
-								<div className="teknup-progress-bar">
-									<div className="teknup-progress-fill" style={{ width: `${quota.percentage}%` }}></div>
-								</div>
-							</>
-						)}
+			{/* Header with quota info */}
+			<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+				<h2 className="teknup-heading" style={{ margin: 0, color: '#fff' }}>Upload Your Track</h2>
+				{quota && !quota.unlimited && (
+					<div style={{ color: '#fff', fontSize: '14px', fontWeight: '500' }}>
+						Used {quota.usage}/{quota.limit}
 					</div>
-				</div>
-			)}
+				)}
+			</div>
 
 			{quota && quota.remaining === 0 && !quota.unlimited && (
 				<div className="teknup-card" style={{ marginBottom: '24px', background: 'rgba(255, 152, 0, 0.1)', borderColor: 'rgba(255, 152, 0, 0.3)' }}>
@@ -272,7 +262,7 @@ const Upload = () => {
 							</div>
 
 							<div style={{ marginTop: '24px' }}>
-								<label className="teknup-label">Techno Style</label>
+								<label className="teknup-label">Music Style</label>
 								<div className="teknup-genre-buttons">
 									{[
 										{ value: 'techno', label: 'Techno' },
@@ -280,7 +270,10 @@ const Upload = () => {
 										{ value: 'hard_techno', label: 'Hard' },
 										{ value: 'industrial_techno', label: 'Industrial' },
 										{ value: 'melodic_techno', label: 'Melodic' },
-										{ value: 'acid_techno', label: 'Acid' }
+										{ value: 'acid_techno', label: 'Acid' },
+										{ value: 'house', label: 'House' },
+										{ value: 'trance', label: 'Trance' },
+										{ value: 'electro', label: 'Electro' }
 									].map((genre) => (
 										<button
 											key={genre.value}
