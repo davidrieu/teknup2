@@ -125,7 +125,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<img src="<?php echo esc_url( home_url( '/wp-content/uploads/2025/11/teknup-logo-noir.png' ) ); ?>" alt="Teknup">
 		</div>
 		<div class="email-body">
-			<h2><?php esc_html_e( 'Welcome to Teknup! 🎵', 'teknup-ai-mastering' ); ?></h2>
+			<h2><?php esc_html_e( 'Welcome to Teknup!', 'teknup-ai-mastering' ); ?></h2>
 
 			<p><?php echo esc_html( sprintf( __( 'Hi %s,', 'teknup-ai-mastering' ), $user->display_name ) ); ?></p>
 
@@ -146,7 +146,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 			<p style="text-align: center;">
 				<a href="<?php echo esc_url( $upload_url ); ?>" class="upload-button">
-					🎵 <?php esc_html_e( 'Upload Your First Track', 'teknup-ai-mastering' ); ?>
+					<?php esc_html_e( 'Upload Your First Track', 'teknup-ai-mastering' ); ?>
 				</a>
 			</p>
 

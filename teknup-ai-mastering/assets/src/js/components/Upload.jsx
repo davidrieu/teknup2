@@ -202,7 +202,6 @@ const Upload = () => {
 			{quota && quota.remaining === 0 && !quota.unlimited && (
 				<div className="teknup-card" style={{ marginBottom: '24px', background: 'rgba(255, 152, 0, 0.1)', borderColor: 'rgba(255, 152, 0, 0.3)' }}>
 					<div style={{ textAlign: 'center' }}>
-						<div style={{ fontSize: '48px', marginBottom: '16px' }}>🔒</div>
 						<h3>Monthly Limit Reached</h3>
 						<p style={{ marginTop: '8px', marginBottom: '16px' }}>
 							You've used all {quota.limit} master{quota.limit > 1 ? 's' : ''} for this month.
@@ -226,7 +225,12 @@ const Upload = () => {
 						onDragOver={(e) => e.preventDefault()}
 						onClick={() => fileInputRef.current?.click()}
 					>
-						<div className="teknup-upload-icon">🎵</div>
+						<div className="teknup-upload-icon">
+							<svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+								<path d="M12 4L12 16M12 4L8 8M12 4L16 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+								<path d="M4 17V19C4 19.5304 4.21071 20.0391 4.58579 20.4142C4.96086 20.7893 5.46957 21 6 21H18C18.5304 21 19.0391 20.7893 19.4142 20.4142C19.7893 20.0391 20 19.5304 20 19V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+							</svg>
+						</div>
 						<h3>Drop your audio file here</h3>
 						<p className="teknup-text-secondary">or click to browse</p>
 						<p className="teknup-text-secondary" style={{ marginTop: '16px' }}>
@@ -357,7 +361,7 @@ const Upload = () => {
 									border: '1px solid rgba(255, 152, 0, 0.3)'
 								}}>
 									<p style={{ margin: 0, color: '#FF9800', fontWeight: 'bold' }}>
-										⚠️ Free Trial Complete
+										Free Trial Complete
 									</p>
 									<p style={{ margin: '8px 0 0 0', fontSize: '14px' }}>
 										Download your mastered track below. To master more tracks, you'll need to subscribe to a plan.
@@ -458,7 +462,6 @@ const Upload = () => {
 
 						{/* Popup header */}
 						<div style={{ textAlign: 'center', marginBottom: '32px' }}>
-							<div style={{ fontSize: '48px', marginBottom: '16px' }}>🎉</div>
 							<h2 style={{ fontSize: '28px', marginBottom: '8px', color: '#fff' }}>
 								Your Track is Ready!
 							</h2>

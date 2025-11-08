@@ -29,7 +29,6 @@ const MasteringApp = () => {
 					className={`teknup-tab ${activeTab === 'upload' ? 'active' : ''}`}
 					onClick={() => setActiveTab('upload')}
 				>
-					<span className="teknup-tab-icon">🎵</span>
 					Mastering
 				</button>
 				<button
@@ -51,7 +50,6 @@ const MasteringApp = () => {
 					className={`teknup-tab ${activeTab === 'dashboard' ? 'active' : ''}`}
 					onClick={() => setActiveTab('dashboard')}
 				>
-					<span className="teknup-tab-icon">📊</span>
 					Dashboard
 				</button>
 			</div>

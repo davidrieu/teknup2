@@ -194,10 +194,18 @@
 }
 
 .teknup-upload-icon {
-	font-size: 48px;
 	margin-bottom: var(--teknup-spacing-md);
 	color: var(--primary);
 	animation: float 3s ease-in-out infinite;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.teknup-upload-icon svg {
+	width: 64px;
+	height: 64px;
+	stroke: var(--primary);
 }
 
 /* Progress Bar */

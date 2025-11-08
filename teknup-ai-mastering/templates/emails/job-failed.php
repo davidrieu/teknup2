@@ -122,12 +122,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 			<p style="text-align: center;">
 				<a href="mailto:<?php echo esc_attr( $support_email ); ?>" class="contact-button">
-					✉ <?php esc_html_e( 'Contact Support', 'teknup-ai-mastering' ); ?>
+					<?php esc_html_e( 'Contact Support', 'teknup-ai-mastering' ); ?>
 				</a>
 			</p>
 
 			<div class="note">
-				💡 <?php esc_html_e( 'This job has not been deducted from your account balance.', 'teknup-ai-mastering' ); ?>
+				<?php esc_html_e( 'This job has not been deducted from your account balance.', 'teknup-ai-mastering' ); ?>
 			</div>
 
 			<p style="margin-top: 30px; color: #666;">
