@@ -20,53 +20,63 @@ if ( ! defined( 'ABSPATH' ) ) {
 			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 			line-height: 1.6;
 			color: #333;
-			background-color: #0a0a0a;
+			background-color: #f4f4f4;
 			margin: 0;
 			padding: 0;
 		}
 		.email-container {
 			max-width: 600px;
 			margin: 40px auto;
-			background: rgba(255, 255, 255, 0.05);
-			border: 1px solid rgba(220, 20, 60, 0.3);
-			border-radius: 12px;
+			background: #ffffff;
+			border-radius: 8px;
 			overflow: hidden;
-			backdrop-filter: blur(10px);
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 		}
 		.email-header {
-			background: linear-gradient(135deg, #dc143c 0%, #8b0000 100%);
-			color: white;
-			padding: 30px;
+			background: #ffffff;
+			padding: 40px 30px 30px;
 			text-align: center;
+			border-bottom: 3px solid #9d2c20;
 		}
-		.email-header h1 {
-			margin: 0;
-			font-size: 28px;
-			text-transform: uppercase;
-			letter-spacing: 2px;
+		.email-header img {
+			max-width: 180px;
+			height: auto;
 		}
 		.email-body {
 			padding: 40px 30px;
-			color: #f5f5f5;
+			color: #333;
 		}
 		.email-body h2 {
-			color: #dc143c;
+			color: #000;
 			margin-top: 0;
-			text-transform: uppercase;
-			letter-spacing: 1px;
+			font-size: 24px;
+			font-weight: 700;
+		}
+		.email-body h3 {
+			color: #000;
+			font-size: 18px;
+			font-weight: 600;
+			margin-top: 30px;
+			margin-bottom: 15px;
+		}
+		.email-body p {
+			color: #333;
+			font-size: 16px;
+			line-height: 1.6;
 		}
 		.upload-button {
 			display: inline-block;
-			padding: 15px 40px;
-			background: linear-gradient(135deg, #dc143c 0%, #8b0000 100%);
-			color: white;
+			padding: 16px 40px;
+			background: linear-gradient(135deg, #9d2c20 0%, #ad1831 100%);
+			color: #ffffff !important;
 			text-decoration: none;
-			border-radius: 8px;
-			margin: 20px 0;
-			font-weight: bold;
+			border-radius: 6px;
+			margin: 25px 0;
+			font-weight: 700;
 			text-transform: uppercase;
-			letter-spacing: 1px;
-			box-shadow: 0 4px 15px rgba(220, 20, 60, 0.3);
+			letter-spacing: 0.5px;
+			font-size: 14px;
+			box-shadow: 0 4px 12px rgba(157, 44, 32, 0.3);
 		}
 		.features-list {
 			list-style: none;
@@ -74,38 +84,55 @@ if ( ! defined( 'ABSPATH' ) ) {
 			margin: 20px 0;
 		}
 		.features-list li {
-			padding: 10px 0;
-			padding-left: 30px;
+			padding: 12px 0 12px 35px;
 			position: relative;
+			font-size: 15px;
+			color: #333;
 		}
 		.features-list li:before {
 			content: "✓";
 			position: absolute;
 			left: 0;
-			color: #dc143c;
+			color: #9d2c20;
 			font-weight: bold;
-			font-size: 18px;
+			font-size: 20px;
+			width: 25px;
+			height: 25px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+		.welcome-box {
+			background: #f8f9fa;
+			border-left: 4px solid #9d2c20;
+			padding: 20px;
+			border-radius: 4px;
+			margin: 25px 0;
 		}
 		.email-footer {
-			background: rgba(0, 0, 0, 0.3);
-			padding: 20px;
+			background: #f8f9fa;
+			padding: 25px;
 			text-align: center;
-			font-size: 12px;
-			color: #999;
+			font-size: 13px;
+			color: #666;
+			border-top: 1px solid #e0e0e0;
 		}
 	</style>
 </head>
 <body>
 	<div class="email-container">
 		<div class="email-header">
-			<h1>🎵 TEKNUP AI MASTERING</h1>
+			<img src="<?php echo esc_url( home_url( '/wp-content/uploads/2025/11/teknup-logo-noir.png' ) ); ?>" alt="Teknup">
 		</div>
 		<div class="email-body">
-			<h2><?php esc_html_e( 'Welcome to Teknup!', 'teknup-ai-mastering' ); ?></h2>
+			<h2><?php esc_html_e( 'Welcome to Teknup! 🎵', 'teknup-ai-mastering' ); ?></h2>
 
 			<p><?php echo esc_html( sprintf( __( 'Hi %s,', 'teknup-ai-mastering' ), $user->display_name ) ); ?></p>
 
-			<p><?php esc_html_e( 'Welcome to Teknup AI Mastering! We\'re excited to help you take your music to the next level with professional-quality mastering powered by artificial intelligence.', 'teknup-ai-mastering' ); ?></p>
+			<div class="welcome-box">
+				<strong><?php esc_html_e( 'Welcome to Teknup AI Mastering!', 'teknup-ai-mastering' ); ?></strong><br>
+				<?php esc_html_e( 'We\'re excited to help you take your music to the next level with professional-quality mastering powered by artificial intelligence.', 'teknup-ai-mastering' ); ?>
+			</div>
 
 			<h3><?php esc_html_e( 'What You Can Do:', 'teknup-ai-mastering' ); ?></h3>
 
@@ -119,15 +146,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 			<p style="text-align: center;">
 				<a href="<?php echo esc_url( $upload_url ); ?>" class="upload-button">
-					<?php esc_html_e( 'Upload Your First Track', 'teknup-ai-mastering' ); ?>
+					🎵 <?php esc_html_e( 'Upload Your First Track', 'teknup-ai-mastering' ); ?>
 				</a>
 			</p>
 
 			<p><?php esc_html_e( 'If you have any questions, our support team is always here to help. Just reply to this email!', 'teknup-ai-mastering' ); ?></p>
 
-			<p style="margin-top: 30px;">
+			<p style="margin-top: 30px; color: #666;">
 				<?php esc_html_e( 'Let\'s make some great music together!', 'teknup-ai-mastering' ); ?><br>
-				<strong>The Teknup Team</strong>
+				<strong style="color: #000;">The Teknup Team</strong>
 			</p>
 		</div>
 		<div class="email-footer">
