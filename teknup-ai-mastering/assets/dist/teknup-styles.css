@@ -674,7 +674,8 @@
 }
 
 .teknup-auth-tab:hover {
-	color: var(--primary);
+	color: var(--teknup-white);
+	background: linear-gradient(135deg, rgba(157, 44, 32, 0.3), rgba(173, 24, 49, 0.3));
 }
 
 .teknup-auth-tab.active {
