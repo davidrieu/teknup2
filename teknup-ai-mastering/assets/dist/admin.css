@@ -1,0 +1,288 @@
+/**
+ * Teknup Admin Dashboard Styles
+ * Modern design matching the frontend theme
+ */
+
+:root {
+	/* Primary Colors - matching website */
+	--teknup-primary: #9d2c20;
+	--teknup-secondary: #ad1831;
+	--teknup-accent: #c92a2a;
+
+	/* Grays */
+	--teknup-white: #FFFFFF;
+	--teknup-gray-light: #CCCCCC;
+	--teknup-gray: #999999;
+	--teknup-gray-dark: #666666;
+	--teknup-bg-dark: #0A0A0A;
+	--teknup-bg-card: rgba(255, 255, 255, 0.05);
+	--teknup-border: rgba(157, 44, 32, 0.3);
+}
+
+.teknup-dashboard {
+	background: #f8f9fa;
+	padding: 20px;
+}
+
+.teknup-dashboard h1 {
+	font-size: 28px;
+	font-weight: 700;
+	color: #23282d;
+	margin-bottom: 30px;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.teknup-dashboard h1::before {
+	content: '🎵';
+	font-size: 32px;
+}
+
+/* Statistics Cards */
+.teknup-stats-cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: 20px;
+	margin-bottom: 30px;
+}
+
+.teknup-stat-card {
+	background: white;
+	border-radius: 12px;
+	padding: 24px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	transition: all 0.3s ease;
+	border-left: 4px solid var(--teknup-primary);
+	position: relative;
+	overflow: hidden;
+}
+
+.teknup-stat-card::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 100px;
+	height: 100px;
+	background: linear-gradient(135deg, var(--teknup-primary) 0%, var(--teknup-secondary) 100%);
+	opacity: 0.05;
+	border-radius: 50%;
+	transform: translate(30%, -30%);
+}
+
+.teknup-stat-card:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 8px 20px rgba(157, 44, 32, 0.15);
+}
+
+.teknup-stat-card .teknup-stat-icon {
+	font-size: 36px;
+	margin-bottom: 12px;
+	filter: grayscale(0.3);
+}
+
+.teknup-stat-card .teknup-stat-value {
+	font-size: 32px;
+	font-weight: 700;
+	background: linear-gradient(135deg, var(--teknup-primary), var(--teknup-secondary));
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+	margin-bottom: 6px;
+	line-height: 1.2;
+}
+
+.teknup-stat-card .teknup-stat-label {
+	font-size: 14px;
+	color: #666;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	font-weight: 600;
+}
+
+/* Charts Section */
+.teknup-charts {
+	margin-bottom: 30px;
+}
+
+.teknup-chart-container {
+	background: white;
+	border-radius: 12px;
+	padding: 30px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	position: relative;
+	height: 400px;
+}
+
+.teknup-chart-container h2 {
+	font-size: 18px;
+	font-weight: 700;
+	color: #23282d;
+	margin: 0 0 20px 0;
+	padding-bottom: 15px;
+	border-bottom: 2px solid #f0f0f0;
+}
+
+.teknup-chart-container canvas {
+	max-height: 300px;
+}
+
+/* Recent Jobs Section */
+.teknup-recent-jobs {
+	background: white;
+	border-radius: 12px;
+	padding: 30px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.teknup-recent-jobs h2 {
+	font-size: 18px;
+	font-weight: 700;
+	color: #23282d;
+	margin: 0 0 20px 0;
+	padding-bottom: 15px;
+	border-bottom: 2px solid #f0f0f0;
+}
+
+/* Modern Table Styling */
+.teknup-recent-jobs .wp-list-table {
+	border: none;
+	background: white;
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.teknup-recent-jobs .wp-list-table thead {
+	background: linear-gradient(135deg, var(--teknup-primary) 0%, var(--teknup-secondary) 100%);
+}
+
+.teknup-recent-jobs .wp-list-table thead th {
+	color: white;
+	font-weight: 600;
+	text-transform: uppercase;
+	font-size: 12px;
+	letter-spacing: 0.5px;
+	padding: 16px;
+	border: none;
+}
+
+.teknup-recent-jobs .wp-list-table tbody tr {
+	transition: all 0.2s ease;
+	border-bottom: 1px solid #f0f0f0;
+}
+
+.teknup-recent-jobs .wp-list-table tbody tr:hover {
+	background: #f8f9fa;
+	transform: scale(1.01);
+}
+
+.teknup-recent-jobs .wp-list-table tbody td {
+	padding: 16px;
+	font-size: 14px;
+	color: #555;
+	border: none;
+}
+
+.teknup-recent-jobs .wp-list-table tbody tr:last-child {
+	border-bottom: none;
+}
+
+/* Status Badges */
+.teknup-status-badge {
+	display: inline-block;
+	padding: 6px 14px;
+	border-radius: 20px;
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.teknup-status-pending,
+.teknup-status-uploaded {
+	background: rgba(255, 193, 7, 0.15);
+	color: #f59e0b;
+	border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.teknup-status-sent_to_dolby,
+.teknup-status-processing {
+	background: rgba(59, 130, 246, 0.15);
+	color: #3b82f6;
+	border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.teknup-status-completed {
+	background: rgba(34, 197, 94, 0.15);
+	color: #22c55e;
+	border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.teknup-status-failed {
+	background: rgba(239, 68, 68, 0.15);
+	color: #ef4444;
+	border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Button Styling */
+.teknup-recent-jobs .button {
+	background: linear-gradient(135deg, var(--teknup-primary) 0%, var(--teknup-secondary) 100%);
+	color: white;
+	border: none;
+	padding: 12px 24px;
+	border-radius: 6px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	font-size: 13px;
+	transition: all 0.3s ease;
+	box-shadow: 0 2px 8px rgba(157, 44, 32, 0.3);
+	margin-top: 20px;
+}
+
+.teknup-recent-jobs .button:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(157, 44, 32, 0.4);
+}
+
+/* Empty State */
+.teknup-recent-jobs tbody td[colspan] {
+	text-align: center;
+	padding: 40px;
+	color: #999;
+	font-size: 14px;
+}
+
+.teknup-recent-jobs tbody td[colspan]::before {
+	content: '📂';
+	display: block;
+	font-size: 48px;
+	margin-bottom: 12px;
+	opacity: 0.3;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.teknup-stats-cards {
+		grid-template-columns: 1fr;
+	}
+
+	.teknup-chart-container {
+		height: 300px;
+	}
+
+	.teknup-chart-container canvas {
+		max-height: 200px;
+	}
+
+	.teknup-recent-jobs .wp-list-table {
+		font-size: 13px;
+	}
+
+	.teknup-recent-jobs .wp-list-table thead th,
+	.teknup-recent-jobs .wp-list-table tbody td {
+		padding: 12px 8px;
+	}
+}
+

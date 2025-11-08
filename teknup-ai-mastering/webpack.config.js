@@ -7,6 +7,7 @@ module.exports = {
 		upload: './assets/src/js/upload.jsx',
 		dashboard: './assets/src/js/dashboard.jsx',
 		'teknup-styles': './assets/src/css/teknup-styles.css',
+		'admin': './assets/src/css/admin.css',
 	},
 	output: {
 		path: path.resolve(__dirname, 'assets/dist'),

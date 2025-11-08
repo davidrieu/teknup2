@@ -19,56 +19,44 @@ $daily_usage = $data['daily_usage'];
 ?>
 
 <div class="wrap teknup-dashboard">
-	<h1><?php esc_html_e( 'Teknup AI Mastering Dashboard', 'teknup-ai-mastering' ); ?></h1>
+	<h1><?php esc_html_e( 'Dashboard', 'teknup-ai-mastering' ); ?></h1>
 
 	<!-- Statistics Cards -->
 	<div class="teknup-stats-cards">
 		<div class="teknup-stat-card">
 			<div class="teknup-stat-icon">📊</div>
-			<div class="teknup-stat-content">
-				<div class="teknup-stat-value"><?php echo esc_html( number_format_i18n( $stats['total_jobs'] ) ); ?></div>
-				<div class="teknup-stat-label"><?php esc_html_e( 'Total Jobs', 'teknup-ai-mastering' ); ?></div>
-			</div>
+			<div class="teknup-stat-value"><?php echo esc_html( number_format_i18n( $stats['total_jobs'] ) ); ?></div>
+			<div class="teknup-stat-label"><?php esc_html_e( 'Total Jobs', 'teknup-ai-mastering' ); ?></div>
 		</div>
 
 		<div class="teknup-stat-card">
 			<div class="teknup-stat-icon">✓</div>
-			<div class="teknup-stat-content">
-				<div class="teknup-stat-value"><?php echo esc_html( number_format_i18n( $stats['completed_jobs'] ) ); ?></div>
-				<div class="teknup-stat-label"><?php esc_html_e( 'Completed', 'teknup-ai-mastering' ); ?></div>
-			</div>
+			<div class="teknup-stat-value"><?php echo esc_html( number_format_i18n( $stats['completed_jobs'] ) ); ?></div>
+			<div class="teknup-stat-label"><?php esc_html_e( 'Completed', 'teknup-ai-mastering' ); ?></div>
 		</div>
 
 		<div class="teknup-stat-card">
 			<div class="teknup-stat-icon">✗</div>
-			<div class="teknup-stat-content">
-				<div class="teknup-stat-value"><?php echo esc_html( number_format_i18n( $stats['failed_jobs'] ) ); ?></div>
-				<div class="teknup-stat-label"><?php esc_html_e( 'Failed', 'teknup-ai-mastering' ); ?></div>
-			</div>
+			<div class="teknup-stat-value"><?php echo esc_html( number_format_i18n( $stats['failed_jobs'] ) ); ?></div>
+			<div class="teknup-stat-label"><?php esc_html_e( 'Failed', 'teknup-ai-mastering' ); ?></div>
 		</div>
 
 		<div class="teknup-stat-card">
 			<div class="teknup-stat-icon">⏱</div>
-			<div class="teknup-stat-content">
-				<div class="teknup-stat-value"><?php echo esc_html( number_format_i18n( $stats['avg_processing_time'] ) ); ?>s</div>
-				<div class="teknup-stat-label"><?php esc_html_e( 'Avg. Processing Time', 'teknup-ai-mastering' ); ?></div>
-			</div>
+			<div class="teknup-stat-value"><?php echo esc_html( number_format_i18n( $stats['avg_processing_time'] ) ); ?>s</div>
+			<div class="teknup-stat-label"><?php esc_html_e( 'Avg. Processing Time', 'teknup-ai-mastering' ); ?></div>
 		</div>
 
 		<div class="teknup-stat-card">
 			<div class="teknup-stat-icon">👥</div>
-			<div class="teknup-stat-content">
-				<div class="teknup-stat-value"><?php echo esc_html( number_format_i18n( $subscription_stats['total'] ) ); ?></div>
-				<div class="teknup-stat-label"><?php esc_html_e( 'Active Subscriptions', 'teknup-ai-mastering' ); ?></div>
-			</div>
+			<div class="teknup-stat-value"><?php echo esc_html( number_format_i18n( $subscription_stats['total'] ) ); ?></div>
+			<div class="teknup-stat-label"><?php esc_html_e( 'Active Subscriptions', 'teknup-ai-mastering' ); ?></div>
 		</div>
 
 		<div class="teknup-stat-card">
 			<div class="teknup-stat-icon">📈</div>
-			<div class="teknup-stat-content">
-				<div class="teknup-stat-value"><?php echo esc_html( number_format_i18n( $stats['jobs_this_month'] ) ); ?></div>
-				<div class="teknup-stat-label"><?php esc_html_e( 'Jobs This Month', 'teknup-ai-mastering' ); ?></div>
-			</div>
+			<div class="teknup-stat-value"><?php echo esc_html( number_format_i18n( $stats['jobs_this_month'] ) ); ?></div>
+			<div class="teknup-stat-label"><?php esc_html_e( 'Jobs This Month', 'teknup-ai-mastering' ); ?></div>
 		</div>
 	</div>
 
@@ -137,31 +125,88 @@ jQuery(document).ready(function($) {
 		var dailyUsageData = <?php echo json_encode( array_values( $daily_usage ) ); ?>;
 		var dailyUsageLabels = <?php echo json_encode( array_keys( $daily_usage ) ); ?>;
 
+		// Format dates for better display
+		var formattedLabels = dailyUsageLabels.map(function(date) {
+			var d = new Date(date);
+			return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+		});
+
 		new Chart(ctx, {
 			type: 'line',
 			data: {
-				labels: dailyUsageLabels,
+				labels: formattedLabels,
 				datasets: [{
 					label: '<?php esc_html_e( 'Jobs', 'teknup-ai-mastering' ); ?>',
 					data: dailyUsageData,
-					borderColor: '#dc143c',
-					backgroundColor: 'rgba(220, 20, 60, 0.1)',
-					tension: 0.4
+					borderColor: '#9d2c20',
+					backgroundColor: 'rgba(157, 44, 32, 0.1)',
+					borderWidth: 3,
+					tension: 0.4,
+					fill: true,
+					pointBackgroundColor: '#9d2c20',
+					pointBorderColor: '#fff',
+					pointBorderWidth: 2,
+					pointRadius: 4,
+					pointHoverRadius: 6,
+					pointHoverBackgroundColor: '#ad1831',
+					pointHoverBorderWidth: 3
 				}]
 			},
 			options: {
 				responsive: true,
 				maintainAspectRatio: false,
+				interaction: {
+					intersect: false,
+					mode: 'index'
+				},
 				plugins: {
 					legend: {
 						display: false
+					},
+					tooltip: {
+						backgroundColor: 'rgba(35, 40, 45, 0.95)',
+						titleColor: '#fff',
+						bodyColor: '#fff',
+						borderColor: '#9d2c20',
+						borderWidth: 1,
+						padding: 12,
+						displayColors: false,
+						callbacks: {
+							title: function(context) {
+								return context[0].label;
+							},
+							label: function(context) {
+								return context.parsed.y + ' job' + (context.parsed.y !== 1 ? 's' : '');
+							}
+						}
 					}
 				},
 				scales: {
+					x: {
+						grid: {
+							display: false
+						},
+						ticks: {
+							color: '#666',
+							maxRotation: 45,
+							minRotation: 45,
+							font: {
+								size: 11
+							}
+						}
+					},
 					y: {
 						beginAtZero: true,
+						grid: {
+							color: 'rgba(0, 0, 0, 0.05)',
+							borderDash: [5, 5]
+						},
 						ticks: {
-							precision: 0
+							precision: 0,
+							color: '#666',
+							font: {
+								size: 12
+							}
 						}
 					}
 				}
