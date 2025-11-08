@@ -249,24 +249,21 @@ const Upload = () => {
 
 							<div style={{ marginTop: '24px' }}>
 								<label className="teknup-label">Mastering Intensity</label>
-								<div className="teknup-intensity-slider-container">
-									<input
-										type="range"
-										className="teknup-intensity-slider"
-										min="0"
-										max="2"
-										step="1"
-										value={settings.intensity === 'light' ? 0 : settings.intensity === 'medium' ? 1 : 2}
-										onChange={(e) => {
-											const values = ['light', 'medium', 'heavy'];
-											setSettings({ ...settings, intensity: values[parseInt(e.target.value)] });
-										}}
-									/>
-									<div className="teknup-intensity-labels">
-										<span className={settings.intensity === 'light' ? 'active' : ''}>Light</span>
-										<span className={settings.intensity === 'medium' ? 'active' : ''}>Medium</span>
-										<span className={settings.intensity === 'heavy' ? 'active' : ''}>Heavy</span>
-									</div>
+								<div className="teknup-intensity-buttons">
+									{[
+										{ value: 'light', label: 'Light' },
+										{ value: 'medium', label: 'Medium' },
+										{ value: 'heavy', label: 'Heavy' }
+									].map((intensity) => (
+										<button
+											key={intensity.value}
+											type="button"
+											className={`teknup-intensity-button ${settings.intensity === intensity.value ? 'active' : ''}`}
+											onClick={() => setSettings({ ...settings, intensity: intensity.value })}
+										>
+											{intensity.label}
+										</button>
+									))}
 								</div>
 							</div>
 
