@@ -5,7 +5,7 @@ const ComingSoon = ({ title, description }) => {
 		<div className="teknup-coming-soon">
 			<div className="teknup-coming-soon-content">
 				<span className="teknup-coming-soon-icon">🚧</span>
-				<h2 className="teknup-heading">{title}</h2>
+				<h2 className="teknup-heading" style={{ color: '#fff' }}>{title}</h2>
 				<div className="teknup-beta-badge">BETA</div>
 				<p className="teknup-coming-soon-description">
 					{description || 'This feature is currently in development and will be available to the public soon.'}

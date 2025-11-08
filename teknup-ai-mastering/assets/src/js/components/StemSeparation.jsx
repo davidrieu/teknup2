@@ -173,7 +173,7 @@ const StemSeparation = () => {
 
 	return (
 		<div className="teknup-upload-container">
-			<h2 className="teknup-heading">Stem Separation</h2>
+			<h2 className="teknup-heading" style={{ color: '#fff' }}>Stem Separation</h2>
 			<p className="teknup-text-secondary" style={{ marginBottom: '24px' }}>
 				Extract individual stems (vocals, drums, bass, other) from your techno track
 			</p>
