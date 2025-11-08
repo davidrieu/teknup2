@@ -262,6 +262,197 @@
 	opacity: 0.3;
 }
 
+/* All Jobs Page */
+.teknup-jobs {
+	background: #f8f9fa;
+	padding: 20px;
+}
+
+.teknup-jobs h1 {
+	font-size: 28px;
+	font-weight: 700;
+	color: #23282d;
+	margin-bottom: 30px;
+}
+
+/* Jobs Stats Bar */
+.teknup-jobs-stats {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 15px;
+	margin-bottom: 25px;
+}
+
+.teknup-job-stat {
+	background: white;
+	padding: 20px;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+	text-align: center;
+	transition: all 0.3s ease;
+}
+
+.teknup-job-stat:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.teknup-job-stat .count {
+	display: block;
+	font-size: 28px;
+	font-weight: 700;
+	background: linear-gradient(135deg, var(--teknup-primary), var(--teknup-secondary));
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+	margin-bottom: 6px;
+}
+
+.teknup-job-stat .label {
+	display: block;
+	font-size: 12px;
+	color: #666;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	font-weight: 600;
+}
+
+/* Filters */
+.teknup-jobs-filters {
+	background: white;
+	padding: 20px;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+	margin-bottom: 25px;
+}
+
+.teknup-jobs-filters form {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.teknup-jobs-filters select {
+	padding: 8px 12px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 14px;
+}
+
+.teknup-jobs-filters .button {
+	background: linear-gradient(135deg, var(--teknup-primary) 0%, var(--teknup-secondary) 100%);
+	color: white;
+	border: none;
+	padding: 8px 20px;
+	border-radius: 4px;
+	font-weight: 600;
+	text-transform: uppercase;
+	font-size: 12px;
+	letter-spacing: 0.5px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.teknup-jobs-filters .button:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 2px 8px rgba(157, 44, 32, 0.3);
+}
+
+.teknup-jobs-filters .button:last-child {
+	background: white;
+	color: var(--teknup-primary);
+	border: 1px solid var(--teknup-primary);
+}
+
+.teknup-jobs-filters .button:last-child:hover {
+	background: #f8f9fa;
+}
+
+/* Jobs Table */
+.teknup-jobs-table-wrapper {
+	background: white;
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	overflow: hidden;
+	margin-bottom: 20px;
+}
+
+.teknup-jobs-table {
+	border: none;
+}
+
+.teknup-jobs-table thead {
+	background: linear-gradient(135deg, var(--teknup-primary) 0%, var(--teknup-secondary) 100%);
+}
+
+.teknup-jobs-table thead th {
+	color: white;
+	font-weight: 600;
+	text-transform: uppercase;
+	font-size: 11px;
+	letter-spacing: 0.5px;
+	padding: 14px 12px;
+	border: none;
+}
+
+.teknup-jobs-table tbody tr {
+	transition: all 0.2s ease;
+	border-bottom: 1px solid #f0f0f0;
+}
+
+.teknup-jobs-table tbody tr:hover {
+	background: #f8f9fa;
+}
+
+.teknup-jobs-table tbody td {
+	padding: 14px 12px;
+	font-size: 13px;
+	color: #555;
+	border: none;
+	vertical-align: top;
+}
+
+.teknup-jobs-table tbody td strong {
+	color: var(--teknup-primary);
+	font-weight: 600;
+}
+
+.teknup-jobs-table tbody td small {
+	color: #999;
+	font-size: 11px;
+}
+
+.teknup-jobs-table .download-link {
+	color: var(--teknup-primary);
+	text-decoration: none;
+	font-size: 12px;
+	font-weight: 600;
+	transition: color 0.2s ease;
+}
+
+.teknup-jobs-table .download-link:hover {
+	color: var(--teknup-secondary);
+}
+
+.teknup-jobs-table .pending-text {
+	color: #ccc;
+}
+
+.teknup-jobs-table .no-jobs {
+	text-align: center;
+	padding: 40px;
+	color: #999;
+	font-size: 14px;
+}
+
+.teknup-jobs-table .no-jobs::before {
+	content: '📂';
+	display: block;
+	font-size: 48px;
+	margin-bottom: 12px;
+	opacity: 0.3;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
 	.teknup-stats-cards {
@@ -283,5 +474,28 @@
 	.teknup-recent-jobs .wp-list-table thead th,
 	.teknup-recent-jobs .wp-list-table tbody td {
 		padding: 12px 8px;
+	}
+
+	.teknup-jobs-stats {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	.teknup-jobs-filters form {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.teknup-jobs-filters select,
+	.teknup-jobs-filters .button {
+		width: 100%;
+	}
+
+	.teknup-jobs-table {
+		font-size: 12px;
+	}
+
+	.teknup-jobs-table thead th,
+	.teknup-jobs-table tbody td {
+		padding: 10px 6px;
 	}
 }
