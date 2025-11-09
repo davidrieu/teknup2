@@ -118,6 +118,68 @@ const SubscriptionPlans = () => {
 					</button>
 				</div>
 			))}
+
+			{/* Custom Label Plan */}
+			<div className="teknup-plan-card">
+				<div className="teknup-plan-header">
+					<h3>Label</h3>
+					<div className="teknup-plan-description">Custom solutions for labels</div>
+					<div className="teknup-plan-price">
+						<span className="price-amount">Custom</span>
+					</div>
+					<p style={{ fontSize: '14px', color: 'var(--teknup-gray-light)', marginTop: '8px' }}>
+						Tailored to your needs
+					</p>
+				</div>
+
+				<div className="teknup-plan-features">
+					<ul>
+						<li>
+							<span className="feature-icon">✓</span>
+							Everything in Premium
+						</li>
+						<li>
+							<span className="feature-icon">✓</span>
+							Unlimited masters
+						</li>
+						<li>
+							<span className="feature-icon">✓</span>
+							Dedicated account manager
+						</li>
+						<li>
+							<span className="feature-icon">✓</span>
+							API access
+						</li>
+						<li>
+							<span className="feature-icon">✓</span>
+							White-label option
+						</li>
+						<li>
+							<span className="feature-icon">✓</span>
+							Bulk discounts
+						</li>
+						<li>
+							<span className="feature-icon">✓</span>
+							Custom integration
+						</li>
+						<li>
+							<span className="feature-icon">✓</span>
+							SLA guarantee
+						</li>
+						<li>
+							<span className="feature-icon">✓</span>
+							Phone support
+						</li>
+					</ul>
+				</div>
+
+				<button
+					className="teknup-button teknup-button-primary"
+					onClick={() => window.location.href = `${teknupData.siteUrl}/contact-us`}
+				>
+					Contact Us
+				</button>
+			</div>
 		</div>
 	);
 };

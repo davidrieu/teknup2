@@ -2,12 +2,25 @@ import React from 'react';
 import SubscriptionPlans from './SubscriptionPlans';
 
 const NoSubscription = () => {
+	const plansRef = React.useRef(null);
+
+	const scrollToPlans = () => {
+		plansRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	};
+
 	return (
 		<div className="teknup-no-subscription">
 			<div className="teknup-no-subscription-header">
 				<div className="teknup-no-subscription-icon">🔒</div>
 				<h2>Active Subscription Required</h2>
 				<p>You need an active subscription to use Teknup AI Mastering</p>
+				<button
+					onClick={scrollToPlans}
+					className="teknup-button"
+					style={{ marginTop: '16px' }}
+				>
+					View Subscription Plans
+				</button>
 			</div>
 
 			<div className="teknup-no-subscription-content">
@@ -45,7 +58,7 @@ const NoSubscription = () => {
 					</ul>
 				</div>
 
-				<div className="teknup-no-subscription-plans">
+				<div ref={plansRef} className="teknup-no-subscription-plans">
 					<h3>Choose Your Plan</h3>
 					<SubscriptionPlans />
 				</div>

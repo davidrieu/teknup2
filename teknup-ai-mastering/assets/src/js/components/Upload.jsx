@@ -17,6 +17,7 @@ const Upload = () => {
 	});
 
 	const fileInputRef = useRef(null);
+	const selectedFileRef = useRef(null);
 
 	// Fetch quota on mount
 	React.useEffect(() => {
@@ -76,6 +77,11 @@ const Upload = () => {
 
 		setFile(file);
 		setError(null);
+
+		// Scroll to selected file section
+		setTimeout(() => {
+			selectedFileRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}, 100);
 	};
 
 	const handleUpload = async () => {
@@ -236,7 +242,7 @@ const Upload = () => {
 					</div>
 
 					{file && (
-						<div className="teknup-card" style={{ marginTop: '24px' }}>
+						<div ref={selectedFileRef} className="teknup-card" style={{ marginTop: '24px' }}>
 							<h3>Selected File</h3>
 							<p className="teknup-text">{file.name}</p>
 							<p className="teknup-text-secondary">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
